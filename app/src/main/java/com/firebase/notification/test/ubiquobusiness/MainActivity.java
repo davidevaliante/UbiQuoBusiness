@@ -14,12 +14,16 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.squareup.haha.perflib.Main;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import es.dmoral.toasty.Toasty;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity {
@@ -64,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
             Intent toUserPage = new Intent(MainActivity.this,MainUserPage.class);
             startActivity(toUserPage);
         }else{
-            Toast.makeText(this, "user not logged in yet", Toast.LENGTH_SHORT).show();
         }
 
         signUpButton.setOnClickListener(new View.OnClickListener() {
@@ -75,7 +78,36 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        signInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loginAttempt();
+            }
+        });
 
+
+    }
+
+    private void loginAttempt(){
+        String userMail = emailField.getText().toString().trim();
+        String userPassword = passwordField.getText().toString().trim();
+        if(!userMail.isEmpty() && !userPassword.isEmpty()){
+            myAuth.signInWithEmailAndPassword(userMail,userPassword).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                @Override
+                public void onSuccess(AuthResult authResult) {
+                    Toasty.success(MainActivity.this,"Login effettuato !",Toast.LENGTH_SHORT,true).show();
+                }
+
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toasty.success(MainActivity.this,"Login fallito !",Toast.LENGTH_SHORT,true).show();
+
+                }
+            });
+        }else{
+            Toasty.error(MainActivity.this,"Riempi tutti i campi e riprova", Toast.LENGTH_SHORT,true).show();
+        }
     }
 
     @Override
@@ -88,4 +120,6 @@ public class MainActivity extends AppCompatActivity {
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
     }
+
+
 }

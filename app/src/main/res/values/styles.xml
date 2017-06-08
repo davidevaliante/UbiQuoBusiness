@@ -6,7 +6,8 @@
         <item name="android:colorPrimary" tools:targetApi="lollipop">@color/colorPrimary</item>
         <item name="android:colorPrimaryDark" tools:targetApi="lollipop">@color/colorPrimaryDark</item>
         <item name="android:colorAccent" tools:targetApi="lollipop">@color/colorAccent</item>
-        <item name="android:windowTranslucentNavigation" tools:targetApi="kitkat">true</item>
+        <item   name="android:windowTranslucentNavigation" tools:targetApi="kitkat">true</item>
+
 
 
 

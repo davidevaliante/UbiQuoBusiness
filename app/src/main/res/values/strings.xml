@@ -1,3 +1,49 @@
 <resources>
-    <string name="app_name">UbiQuoBusiness</string>
+    <string name="app_name">UbiQuo Business</string>
+    <string name="registrati">Registrati</string>
+    <string name="esegui_l_accesso">Esegui l\'accesso</string>
+    <string name="cerca_crea_e_recensisci_eventi_intorno_a_te">Cerca, crea e recensisci eventi intorno a te</string>
+    <string name="action_settings">Impostazioni</string>
+    <string name="et">Età...</string>
+    <string name="inserisci_la_tua_email">Inserisci la tua email...</string>
+    <string name="inserisci_una_password">Inserisci una Password</string>
+    <string name="conferma_la_password">Conferma la Password...</string>
+    <string name="registrati_ad_harlee">Registrati ad Harlee</string>
+    <string name="cognome">Cognome...</string>
+    <string name="citt">Città...</string>
+    <string name="nome">Nome...</string>
+    <string name="facebook_app_id">137794970029608</string>
+    <string name="API_KEY">AIzaSyB2o0gk949tjamlMTn9UHthHalAO0Ltq14</string>
+    <string name="toggle_closed">CLOSED</string>
+    <string name="toggle_opened">OPENED</string>
+
+
+    <!-- Navigation Drawer menu labels -->
+    <string name="nav_home">Home</string>
+    <string name="nav_photos">Photos</string>
+    <string name="nav_movies">Movies</string>
+    <string name="nav_notifications">Notifications</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_about_us">About Us</string>
+
+    <!-- Toolbar titles when navigation menu item is selected -->
+    <string-array name="nav_item_activity_titles">
+        <item>Home</item>
+        <item>Photos</item>
+        <item>Movies</item>
+        <item>Notifications</item>
+        <item>Settings</item>
+    </string-array>
+
+    <string name="activity_title_about_us">About Us</string>
+    <string name="activity_title_privacy_policy">Privacy Policy</string>
+    <string name="action_clear_all">Clear All</string>
+    <string name="action_logout">Logout</string>
+    <string name="action_mark_all_read">Mark All as Read</string>
+    <string name="privacy_policy">Privacy Policy</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
 </resources>

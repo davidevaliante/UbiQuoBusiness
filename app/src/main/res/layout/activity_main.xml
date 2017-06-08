@@ -1,18 +1,144 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.firebase.notification.test.ubiquobusiness.MainActivity">
+    android:paddingBottom="16dp"
+    android:paddingLeft="32dp"
+    android:paddingRight="32dp"
+    android:paddingTop="16dp"
+    tools:context="com.firebase.notification.test.ubiquobusiness.MainActivity"
+    android:background="@drawable/main_gradient"
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    >
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-</android.support.constraint.ConstraintLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="40dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/app_name"
+                fontPath="fonts/Steinerlight.ttf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/userDataLayout"
+                android:layout_marginBottom="20dp"
+                android:layout_marginTop="40dp"
+                android:gravity="center"
+                android:text="UbiQuo"
+                android:textColor="@color/pureWhite"
+                android:textSize="66sp"
+                tools:ignore="MissingPrefix" />
+
+
+            <TextView
+                android:id="@+id/forBusinesses"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="40dp"
+                android:gravity="center"
+                android:text="for Businesses"
+                android:textColor="@color/pureWhite" />
+
+            <LinearLayout
+                android:id="@+id/userDataLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/signIn"
+                android:layout_alignParentStart="true"
+                android:layout_marginBottom="50dp"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:orientation="vertical">
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/input_layout_mail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColorHint="@color/pureWhite"
+                    app:hintTextAppearance="@style/textInputLayoutLabel">
+
+                    <EditText
+                        android:id="@+id/emailField"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginBottom="6dp"
+                        android:ems="10"
+                        android:hint="Email..."
+                        android:inputType="textEmailAddress"
+                        android:padding="16dp"
+                        android:textColor="@color/pureWhite"
+                        android:theme="@style/MyEditText" />
+                </android.support.design.widget.TextInputLayout>
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/input_layout_pass"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColorHint="@color/pureWhite"
+                    app:hintTextAppearance="@style/textInputLayoutLabel">
+
+                    <EditText
+                        android:id="@+id/passwordField"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ems="10"
+                        android:hint="Password..."
+                        android:inputType="textPassword"
+                        android:padding="16dp"
+                        android:textColor="@color/pureWhite"
+                        android:theme="@style/MyEditText" />
+                </android.support.design.widget.TextInputLayout>
+
+            </LinearLayout>
+
+
+
+            <Button
+                android:id="@+id/signIn"
+                fontPath="fonts/Hero.otf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_above="@+id/signUp"
+                android:layout_alignParentStart="true"
+                android:layout_marginBottom="19dp"
+                android:background="@drawable/transparent_button_login"
+                android:elevation="8dp"
+                android:padding="10dp"
+                android:text="@string/esegui_l_accesso"
+                android:textAllCaps="false"
+                android:textColor="@color/cardview_light_background"
+                android:textStyle="normal|bold"
+                tools:ignore="MissingPrefix" />
+
+            <Button
+                android:id="@+id/signUp"
+                fontPath="fonts/Hero.otf"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentStart="true"
+                android:background="@drawable/transparent_button_register"
+                android:elevation="8dp"
+                android:padding="10dp"
+                android:text="@string/registrati"
+                android:textAllCaps="false"
+                android:textColor="#ffffff"
+                android:textStyle="normal|bold"
+                tools:ignore="MissingPrefix" />
+
+
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
+
+</RelativeLayout>

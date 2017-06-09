@@ -2,6 +2,7 @@ package com.firebase.notification.test.ubiquobusiness;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
 
 
         myAuth = FirebaseAuth.getInstance();
@@ -85,6 +87,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //inizializzatore Shared Preferences
+        Context context = this;
+        SharedPreferences sharedPref = context.getSharedPreferences("UbiquoBusiness_UserData" , Context.MODE_PRIVATE);
 
     }
 

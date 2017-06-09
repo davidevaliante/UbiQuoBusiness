@@ -1,5 +1,6 @@
 package com.firebase.notification.test.ubiquobusiness;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Region;
 import android.support.annotation.NonNull;
@@ -16,8 +17,13 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -29,23 +35,35 @@ import java.util.List;
 import butterknife.BindFloat;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import es.dmoral.toasty.Toasty;
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-public class Registration extends FragmentActivity {
+public class Registration extends FragmentActivity implements GoogleApiClient.OnConnectionFailedListener{
     protected FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
     private PagerAdapter pagerAdapter;
-    @BindView(R.id.registrationViewPager) ViewPager registrationViewPager;
+    private GoogleApiClient  mGoogleApiClient;
 
+    @BindView(R.id.registrationViewPager) CustomViewPager registrationViewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         setContentView(R.layout.activity_registration);
         ButterKnife.bind(this);
 
+        UbiQuoBusinessUtils.changeStatusBarColor(R.color.matte_blue_dark,this);
+
+        mGoogleApiClient = new GoogleApiClient
+                .Builder(this)
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .enableAutoManage(this, this)
+                .build();
+
         List<Fragment> registrationFragements = initializeFragments();
         pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(),registrationFragements);
+        registrationViewPager.setPagingEnabled(false);
         registrationViewPager.setAdapter(pagerAdapter);
 
         mAuth = FirebaseAuth.getInstance();
@@ -62,6 +80,13 @@ public class Registration extends FragmentActivity {
         mAuth.addAuthStateListener(authStateListener);
 
 
+
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Toasty.error(Registration.this,"Google Maps connection error", Toast.LENGTH_SHORT, true).show();
     }
 
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
@@ -101,6 +126,11 @@ public class Registration extends FragmentActivity {
     protected void onDestroy() {
         super.onDestroy();
         mAuth.removeAuthStateListener(authStateListener);
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
     }
 
 

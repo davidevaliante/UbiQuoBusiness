@@ -33,4 +33,12 @@ public class OpeningClosing extends Fragment {
         return rootView;
     }
 
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(isVisibleToUser){
+            UbiQuoBusinessUtils.changeStatusBarColor(R.color.colorPrimary,getActivity());
+
+        }
+    }
 }

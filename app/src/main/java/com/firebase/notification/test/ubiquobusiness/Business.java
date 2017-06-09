@@ -8,9 +8,9 @@ package com.firebase.notification.test.ubiquobusiness;
 
 public class Business {
 
-    String contacts, phones;
+    String contacts, phones, id;
     String name,adress,number,city,image;
-    Long latitude,longitude;
+    Double latitude,longitude;
     Integer rating,likes;
     Long openingTime, closingTime;
     String arguments;
@@ -20,7 +20,7 @@ public class Business {
 
     }
 
-    public Business(String contacts, String phones, String name, String adress, String number, String city, Long latitude, Long longitude, Integer rating, Integer likes, Long openingTime, Long closingTime, String image, String arguments) {
+    public Business(String id, String contacts, String phones, String name, String adress, String number, String city, Double latitude, Double longitude, Integer rating, Integer likes, Long openingTime, Long closingTime, String image, String arguments) {
         this.contacts = contacts;
         this.phones = phones;
         this.name = name;
@@ -34,6 +34,23 @@ public class Business {
         this.openingTime = openingTime;
         this.closingTime = closingTime;
         this.image = image;
+        this.arguments = arguments;
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getArguments() {
+        return arguments;
+    }
+
+    public void setArguments(String arguments) {
         this.arguments = arguments;
     }
 
@@ -93,19 +110,19 @@ public class Business {
         this.city = city;
     }
 
-    public Long getLatitude() {
+    public Double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(Long latitude) {
+    public void setLatitude(Double latitude) {
         this.latitude = latitude;
     }
 
-    public Long getLongitude() {
+    public Double getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(Long longitude) {
+    public void setLongitude(Double longitude) {
         this.longitude = longitude;
     }
 

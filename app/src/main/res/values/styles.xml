@@ -2,18 +2,25 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
-
+        <item name="android:textColor">@color/pureWhite</item>
         <item name="android:colorPrimary" tools:targetApi="lollipop">@color/colorPrimary</item>
         <item name="android:colorPrimaryDark" tools:targetApi="lollipop">@color/colorPrimaryDark</item>
         <item name="android:colorAccent" tools:targetApi="lollipop">@color/colorAccent</item>
         <item   name="android:windowTranslucentNavigation" tools:targetApi="kitkat">true</item>
+        <item name="colorControlNormal">@color/pureWhite</item>
+        <item name="colorControlActivated">@color/pureWhite</item>
+        <item name="colorControlHighlight">@color/pureWhite</item>
 
 
 
 
     </style>
 
+    <style name="TextAppearance.App.TextInputLayout" parent="@android:style/TextAppearance">
 
+        <item name="android:textColor">@color/light_grey</item>
+        <item name="android:textSize">14sp</item>
+    </style>
 
     <style name="MyEditText" parent="Theme.AppCompat.Light">
         <item name="colorControlNormal">@color/pureWhite</item>

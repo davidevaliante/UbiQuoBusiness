@@ -1,14 +1,140 @@
-<ScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/registration_first_viewpager"
-    android:layout_width="match_parent"
+<RelativeLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/time_bw"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+        <ScrollView
+            android:fillViewport="true"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/registration_second_viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="pick the opening and closing time" />
+        android:fitsSystemWindows="true">
+            <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fitsSystemWindows="true"
+                android:focusableInTouchMode="true"
+                tools:context="com.firebase.notification.test.ubiquobusiness.Registration">
 
-</ScrollView>
+
+                <com.mikhaellopez.circularimageview.CircularImageView
+                    android:src="@drawable/camera_white_48"
+                    android:scaleType="centerCrop"
+                    android:id="@+id/avatar"
+                    app:civ_border_color="@color/colorAccent"
+                    app:civ_border_width="2dp"
+                    android:layout_width="90dp"
+                    android:layout_height="90dp"
+                    android:layout_marginBottom="8dp"
+                    app:layout_constraintBottom_toTopOf="@+id/openingTime"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginRight="8dp"
+                    app:layout_constraintRight_toRightOf="parent"
+                    android:layout_marginLeft="8dp"
+                    app:layout_constraintLeft_toLeftOf="parent" />
+
+
+                <TextView
+                    android:textSize="18sp"
+                    android:gravity="center"
+                    android:text="Orario di apertura"
+                    android:id="@+id/openingTime"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="8dp"
+                    app:layout_constraintRight_toRightOf="parent"
+                    android:layout_marginLeft="8dp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:layout_marginTop="180dp"
+                    app:layout_constraintHorizontal_bias="0.0" />
+
+                <View
+                    android:id="@+id/view"
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginLeft="32dp"
+                    android:layout_marginRight="32dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@color/pureWhite"
+                    app:layout_constraintBottom_toTopOf="@+id/closingTime"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/openingTime" />
+
+                <TextView
+                    android:textSize="18sp"
+                    android:gravity="center"
+                    android:text="Orario di chiusura"
+                    android:id="@+id/closingTime"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="8dp"
+                    app:layout_constraintRight_toRightOf="parent"
+                    android:layout_marginLeft="8dp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:layout_marginBottom="332dp" />
+
+                <ImageButton
+                    android:background="@drawable/camera_white_48"
+                    android:id="@+id/cameraButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginRight="8dp"
+                    app:layout_constraintRight_toRightOf="parent"
+                    android:layout_marginLeft="8dp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    android:layout_marginTop="71dp"
+                    app:layout_constraintTop_toBottomOf="@+id/closingTime" />
+
+                <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:id="@+id/buttonLayout2"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="64dp"
+                    android:layout_marginLeft="8dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_marginStart="64dp"
+                    android:background="@drawable/borded_button"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintHorizontal_bias="0.58"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    android:layout_marginBottom="60dp">
+
+                    <TextView
+                        android:id="@+id/skillTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="64dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_centerInParent="true"
+                        android:layout_centerVertical="true"
+                        android:gravity="center"
+                        android:paddingBottom="16dp"
+                        android:paddingEnd="32dp"
+                        android:paddingStart="32dp"
+                        android:paddingTop="16dp"
+                        android:text="Avanti"
+                        android:textColor="@color/pureWhite"
+                        android:textSize="@dimen/abc_text_size_medium_material" />
+                </RelativeLayout>
+
+
+
+            </android.support.constraint.ConstraintLayout>
+
+
+
+        </ScrollView>
+</RelativeLayout>

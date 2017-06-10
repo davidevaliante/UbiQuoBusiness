@@ -18,7 +18,7 @@
     <string name="toggle_opened">OPENED</string>
     <string name="name_place_fragment">"Inserisci i dati della tua attività manualmente oppure cercala su GoogleMaps"</string>
     <string name="use_google_maps">Sono già presente su GoogleMaps !</string>
-    <string name="string_place_name">Nome attività...</string>
+    <string name="string_place_name">Nome attività</string>
     <string name="string_adress">Indirizzo...</string>
     <string name="string_city">Città...</string>
     <string name="string_next">Avanti</string>

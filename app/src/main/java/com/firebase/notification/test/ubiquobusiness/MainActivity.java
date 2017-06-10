@@ -60,11 +60,8 @@ public class MainActivity extends AppCompatActivity {
         };
         myAuth.addAuthStateListener(myAuthStateListener);
 
-        //rende la statusbar completamente invisibile
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            Window w = getWindow(); // in Activity's onCreate() for instance
-            w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        }
+        UbiQuoBusinessUtils.removeStatusBar(this);
+
         //utente già loggato
         if(myAuth.getCurrentUser() != null){
             Intent toUserPage = new Intent(MainActivity.this,MainUserPage.class);
@@ -106,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    Toasty.success(MainActivity.this,"Login fallito !",Toast.LENGTH_SHORT,true).show();
+                    Toasty.error(MainActivity.this,"Login fallito !",Toast.LENGTH_SHORT,true).show();
 
                 }
             });

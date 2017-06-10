@@ -1,6 +1,6 @@
 <!-- fragment_screen_slide_page.xml -->
 <LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/matte_blue"
+    android:background="@drawable/shaded_skyline"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
@@ -8,6 +8,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <ScrollView
+        android:fillViewport="true"
         android:id="@+id/registration_first_viewpager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -23,62 +24,6 @@
             tools:context="com.firebase.notification.test.ubiquobusiness.Registration">
 
 
-            <ImageView
-                android:id="@+id/imageView2"
-                android:layout_width="0dp"
-                android:layout_height="140dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/first_reg_bg"
-                app:layout_constraintHorizontal_bias="1.0"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:id="@+id/textView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:background="@drawable/bottom_white_line"
-                android:gravity="center"
-                android:paddingBottom="16dp"
-                android:paddingLeft="16dp"
-                android:paddingRight="16dp"
-                android:text="@string/name_place_fragment"
-                android:textColor="@color/pureWhite"
-                android:textSize="17sp"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/imageView2" />
-
-            <LinearLayout
-                android:id="@+id/linearLayout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:layout_marginTop="16dp"
-                android:orientation="vertical"
-                android:paddingBottom="16dp"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/textView">
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginBottom="8dp"
-                    android:src="@drawable/world_map_48" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:gravity="center"
-                    android:text="@string/use_google_maps"
-                    android:textColor="@color/pureWhite" />
-            </LinearLayout>
-
             <android.support.v7.widget.CardView
                 android:id="@+id/cardView4"
                 android:layout_width="0dp"
@@ -87,7 +32,7 @@
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="0dp"
+                android:layout_marginTop="40dp"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
@@ -108,20 +53,22 @@
             </android.support.v7.widget.CardView>
 
 
-
-
             <android.support.v7.widget.CardView
                 android:id="@+id/cardView3"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
+                android:layout_marginTop="24dp"
+                app:layout_constraintTop_toBottomOf="@+id/cardView2"
+                android:layout_marginLeft="8dp"
                 app:layout_constraintLeft_toLeftOf="parent"
+                android:layout_marginRight="8dp"
                 app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/cardView2">
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp">
 
                 <fragment
                     android:id="@+id/place_autocomplete_adress"
-                    android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+                    android:name="com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="0dp"
@@ -132,6 +79,7 @@
             </android.support.v7.widget.CardView>
 
             <android.support.v7.widget.CardView
+                android:background="@color/transparentColor"
                 android:id="@+id/cardView2"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -139,14 +87,14 @@
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginStart="8dp"
+                android:layout_marginTop="24dp"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                android:layout_marginTop="8dp"
                 app:layout_constraintTop_toBottomOf="@+id/cardView4">
 
                 <fragment
                     android:id="@+id/place_autocomplete_city"
-                    android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+                    android:name="com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="0dp"
@@ -154,20 +102,71 @@
                     tools:layout_editor_absoluteX="8dp" />
             </android.support.v7.widget.CardView>
 
-
-            <Button
-                android:id="@+id/button_next"
-                android:layout_width="wrap_content"
+            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/buttonLayout"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:background="@color/transparentColor"
-                android:paddingTop="22dp"
-                android:text="@string/string_next"
-                android:textColor="@color/pureWhite"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginEnd="64dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="64dp"
                 android:layout_marginTop="8dp"
-                app:layout_constraintTop_toBottomOf="@+id/cardView3" />
+                android:background="@drawable/borded_button"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cardView3"
+                app:layout_constraintVertical_bias="0.956"
+                android:layout_marginBottom="60dp">
+
+                <TextView
+                    android:id="@+id/skillTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="64dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerInParent="true"
+                    android:layout_centerVertical="true"
+                    android:gravity="center"
+                    android:paddingBottom="16dp"
+                    android:paddingEnd="32dp"
+                    android:paddingStart="32dp"
+                    android:paddingTop="16dp"
+                    android:text="Avanti"
+                    android:textColor="@color/pureWhite"
+                    android:textSize="@dimen/abc_text_size_medium_material" />
+            </RelativeLayout>
+
+
+
+            <LinearLayout
+                android:id="@+id/linearLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="18dp"
+                android:layout_marginTop="91dp"
+                android:orientation="vertical"
+                android:paddingBottom="16dp"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="8dp"
+                    android:src="@drawable/world_map_48" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center"
+                    android:text="@string/use_google_maps"
+                    android:textColor="@color/pureWhite" />
+            </LinearLayout>
 
 
         </android.support.constraint.ConstraintLayout>

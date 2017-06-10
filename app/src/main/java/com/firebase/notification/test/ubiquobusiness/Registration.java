@@ -2,6 +2,7 @@ package com.firebase.notification.test.ubiquobusiness;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Region;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -39,6 +40,7 @@ import es.dmoral.toasty.Toasty;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class Registration extends FragmentActivity implements GoogleApiClient.OnConnectionFailedListener{
+
     protected FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
     private PagerAdapter pagerAdapter;
@@ -52,19 +54,21 @@ public class Registration extends FragmentActivity implements GoogleApiClient.On
         setContentView(R.layout.activity_registration);
         ButterKnife.bind(this);
 
-        UbiQuoBusinessUtils.changeStatusBarColor(R.color.matte_blue_dark,this);
+        UbiQuoBusinessUtils.removeStatusBar(this);
 
         mGoogleApiClient = new GoogleApiClient
-                .Builder(this)
-                .addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API)
-                .enableAutoManage(this, this)
-                .build();
+                                                .Builder(this)
+                                                .addApi(Places.GEO_DATA_API)
+                                                .addApi(Places.PLACE_DETECTION_API)
+                                                .enableAutoManage(this, this)
+                                                .build();
 
         List<Fragment> registrationFragements = initializeFragments();
         pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(),registrationFragements);
         registrationViewPager.setPagingEnabled(false);
         registrationViewPager.setAdapter(pagerAdapter);
+
+
 
         mAuth = FirebaseAuth.getInstance();
         authStateListener = new FirebaseAuth.AuthStateListener() {
@@ -134,6 +138,12 @@ public class Registration extends FragmentActivity implements GoogleApiClient.On
     }
 
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+    }
+
     private List<Fragment> initializeFragments(){
         List<Fragment> fList = new ArrayList<Fragment>();
         fList.add(NamePlaceFragment.newInstance());
@@ -142,4 +152,6 @@ public class Registration extends FragmentActivity implements GoogleApiClient.On
 
         return fList;
     }
+
+
 }

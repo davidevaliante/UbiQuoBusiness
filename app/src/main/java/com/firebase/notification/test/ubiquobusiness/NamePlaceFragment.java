@@ -4,36 +4,31 @@ package com.firebase.notification.test.ubiquobusiness;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.util.Log;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
-import com.google.android.gms.identity.intents.Address;
 import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
+import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.IOException;
 import java.util.List;
@@ -50,25 +45,29 @@ import static android.app.Activity.RESULT_OK;
  * A simple {@link Fragment} subclass.
  */
 public class NamePlaceFragment extends Fragment {
-    private Geocoder mGeocoder ;
+    @BindView(R.id.buttonLayout)
+    RelativeLayout buttonLayout;
+    private Geocoder mGeocoder;
 
-    private final static LatLng upperBound = new LatLng(46.191152,9.383675);
-    private final static LatLng lowerBound = new LatLng(36.693164,14.995949);
-    PlaceAutocompleteFragment autocompleteFragmentCity, autocompleteFragmentAdress;
+    private final static LatLng upperBound = new LatLng(46.191152, 9.383675);
+    private final static LatLng lowerBound = new LatLng(36.693164, 14.995949);
+    SupportPlaceAutocompleteFragment autocompleteFragmentCity, autocompleteFragmentAdress;
 
     int PLACE_PICKER_REQUEST = 1;
     int CITY_PICKER_REQUEST = 2;
     int ADRESS_PICKER_REQUEST = 3;
-    @BindView(R.id.linearLayout) LinearLayout mapButton;
-    @BindView(R.id.placeName) EditText name;
-    @BindView(R.id.button_next) Button nextButton;
+    @BindView(R.id.linearLayout)
+    LinearLayout mapButton;
+    @BindView(R.id.placeName)
+    EditText name;
+
 
 
     public NamePlaceFragment() {
         // Required empty public constructor
     }
 
-    public static NamePlaceFragment newInstance(){
+    public static NamePlaceFragment newInstance() {
         NamePlaceFragment namePlaceFragment = new NamePlaceFragment();
         return namePlaceFragment;
     }
@@ -78,20 +77,22 @@ public class NamePlaceFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        ViewGroup rootView = (ViewGroup)inflater.inflate(R.layout.fragment_name_place,container,false);
+        ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_name_place, container, false);
 
-        ButterKnife.bind(this,rootView);
+        ButterKnife.bind(this, rootView);
 
         mGeocoder = new Geocoder(getActivity(), Locale.getDefault());
 
-        autocompleteFragmentCity = (PlaceAutocompleteFragment)
-                getActivity().
-                getFragmentManager().findFragmentById(R.id.place_autocomplete_city);
-        autocompleteFragmentCity.setHint("Cerca la città....");
 
-        autocompleteFragmentAdress = (PlaceAutocompleteFragment)getActivity().getFragmentManager().
-                                    findFragmentById(R.id.place_autocomplete_adress);
-        autocompleteFragmentAdress.setHint("Cerca l'indirizzo...");
+
+        autocompleteFragmentCity = (SupportPlaceAutocompleteFragment)getChildFragmentManager().findFragmentById(R.id.place_autocomplete_city);
+        autocompleteFragmentCity.setHint("Cerca la città");
+
+        autocompleteFragmentAdress = (SupportPlaceAutocompleteFragment)getChildFragmentManager().findFragmentById(R.id.place_autocomplete_adress);
+        autocompleteFragmentAdress.setHint("Cerca l'indirizzo");
+
+        loadRegisterData();
+
 
 
 
@@ -123,12 +124,11 @@ public class NamePlaceFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-
-                LatLngBounds bounds = new LatLngBounds(lowerBound,upperBound);
+                LatLngBounds bounds = new LatLngBounds(lowerBound, upperBound);
                 builder.setLatLngBounds(bounds);
                 try {
                     startActivityForResult(builder.build(getActivity()), PLACE_PICKER_REQUEST);
-                    Toasty.info(getActivity(),"Inserisci il nome della tua attività", Toast.LENGTH_SHORT).show();
+                    Toasty.info(getActivity(), "Inserisci il nome della tua attività", Toast.LENGTH_SHORT).show();
                 } catch (GooglePlayServicesRepairableException e) {
                     e.printStackTrace();
                 } catch (GooglePlayServicesNotAvailableException e) {
@@ -138,11 +138,10 @@ public class NamePlaceFragment extends Fragment {
         });
 
 
-
-        nextButton.setOnClickListener(new View.OnClickListener() {
+        buttonLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(canGoNext()) {
+                if (canGoNext()) {
                     ((Registration) getActivity()).registrationViewPager.setCurrentItem(1, true);
                 }
             }
@@ -162,87 +161,86 @@ public class NamePlaceFragment extends Fragment {
     }
 
 
-
     private String getCityNameByCoordinates(double lat, double lon) throws IOException {
 
-        List<android.location.Address> addresses = mGeocoder.getFromLocation(lat, lon, 1);
+        List<Address> addresses = mGeocoder.getFromLocation(lat, lon, 1);
         if (addresses != null && addresses.size() > 0) {
             return addresses.get(0).getLocality();
         }
         return null;
     }
 
-    private Boolean canGoNext(){
+    private Boolean canGoNext() {
         SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
 
         String mName = name.getText().toString().trim();
-        String city = sharedPreferences.getString("PLACE_CITY","NO_CITY_INSERT_BY_USER");
-        String adress = sharedPreferences.getString("PLACE_ADRESS","NO_ADRESS_INSERT_BY_USER");
+        String city = sharedPreferences.getString("PLACE_CITY", "NO_CITY_INSERT_BY_USER");
+        String adress = sharedPreferences.getString("PLACE_ADRESS", "NO_ADRESS_INSERT_BY_USER");
 
-        if(mName.equalsIgnoreCase("NO_NAME_INSERT_BY_USER") || mName.isEmpty()){
-            Toasty.error(getActivity(),"Riempi tutti i campi per continuare", Toast.LENGTH_SHORT,true).show();
+        if (mName.equalsIgnoreCase("NO_NAME_INSERT_BY_USER") || mName.isEmpty()) {
+            Toasty.error(getActivity(), "Riempi tutti i campi per continuare", Toast.LENGTH_SHORT, true).show();
             return false;
         }
-        if(city.equalsIgnoreCase("NO_CITY_INSERT_BY_USER") || city.isEmpty()){
-            Toasty.error(getActivity(),"Riempi tutti i campi per continuare", Toast.LENGTH_SHORT,true).show();
+        if (city.equalsIgnoreCase("NO_CITY_INSERT_BY_USER") || city.isEmpty()) {
+            Toasty.error(getActivity(), "Riempi tutti i campi per continuare", Toast.LENGTH_SHORT, true).show();
             return false;
         }
 
-        if(adress.equalsIgnoreCase("NO_ADRESS_INSERT_BY_USER") || adress.isEmpty()){
-            Toasty.error(getActivity(),"Riempi tutti i campi per continuare", Toast.LENGTH_SHORT,true).show();
+        if (adress.equalsIgnoreCase("NO_ADRESS_INSERT_BY_USER") || adress.isEmpty()) {
+            Toasty.error(getActivity(), "Riempi tutti i campi per continuare", Toast.LENGTH_SHORT, true).show();
             return false;
         }
 
         return true;
     }
 
-    private void googleMapHandler(Intent data){
+    private void googleMapHandler(Intent data) {
 
-            Place place = PlacePicker.getPlace(getActivity(), data);
-            String placeName = place.getName().toString();
-            String placeAdress = place.getAddress().toString();
-            String id = place.getId();
-            Double latitude = place.getLatLng().latitude;
-            Double longitude = place.getLatLng().longitude;
-            String phone = place.getPhoneNumber().toString();
+        Place place = PlacePicker.getPlace(getActivity(), data);
+        String placeName = place.getName().toString();
+        String placeAdress = place.getAddress().toString();
+        String id = place.getId();
+        Double latitude = place.getLatLng().latitude;
+        Double longitude = place.getLatLng().longitude;
+        String phone = place.getPhoneNumber().toString();
 
 
-            //update  shared preferences
-            SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPref.edit();
+        //update  shared preferences
+        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
 
-            try {
-                String placeCity = getCityNameByCoordinates(latitude,longitude);
-                if(!placeCity.isEmpty()){
-                    autocompleteFragmentCity.setText(placeCity);
-                    editor.putString("PLACE_CITY",placeCity);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+        try {
+            String placeCity = getCityNameByCoordinates(latitude, longitude);
+            if (!placeCity.isEmpty()) {
+                autocompleteFragmentCity.setText(placeCity);
+                editor.putString("PLACE_CITY", placeCity);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
 
-            if(!placeName.isEmpty()) {
-                editor.putString("PLACE_NAME", placeName);
-                name.setText(placeName);
-                name.requestFocus();
-            }
-            if(!placeAdress.isEmpty()){
-                editor.putString("PLACE_ADRESS",placeAdress);
-                autocompleteFragmentAdress.setText(placeAdress);
-            }
+        if (!placeName.isEmpty()) {
+            editor.putString("PLACE_NAME", placeName);
+            name.setText(placeName);
+            name.requestFocus();
+        }
+        if (!placeAdress.isEmpty()) {
+            editor.putString("PLACE_ADRESS", placeAdress);
+            autocompleteFragmentAdress.setText(placeAdress);
+        }
 
 
-            editor.putString("PLACE_ID",id);
-            editor.putString("PLACE_PHONE",phone);
-            UbiQuoBusinessUtils.putDoubleIntoEditor(editor,"PLACE_LATITUDE",latitude);
-            UbiQuoBusinessUtils.putDoubleIntoEditor(editor,"PLACE_LONGITUDE",longitude);
-            editor.commit();
+        editor.putString("PLACE_ID", id);
+        editor.putString("PLACE_PHONE", phone);
+        UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "PLACE_LATITUDE", latitude);
+        UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "PLACE_LONGITUDE", longitude);
+        editor.commit();
 
 
     }
 
-    private void cityMapHandler(Place target_place){
+    private void cityMapHandler(Place target_place) {
         Place place = target_place;
         Double latitude = place.getLatLng().latitude;
         Double longitude = place.getLatLng().longitude;
@@ -252,29 +250,28 @@ public class NamePlaceFragment extends Fragment {
         SharedPreferences.Editor editor = sharedPref.edit();
 
         try {
-            String cityName = getCityNameByCoordinates(latitude,longitude);
+            String cityName = getCityNameByCoordinates(latitude, longitude);
             autocompleteFragmentCity.setText(cityName);
-            editor.putString("PLACE_CITY",cityName);
+            editor.putString("PLACE_CITY", cityName);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        UbiQuoBusinessUtils.putDoubleIntoEditor(editor,"PLACE_LATITUDE",latitude);
-        UbiQuoBusinessUtils.putDoubleIntoEditor(editor,"PLACE_LONGITUDE",longitude);
-        LatLng upper = new LatLng(latitude,longitude);
-        LatLng lower = new LatLng(latitude,longitude);
-        LatLngBounds latlngBounds = new LatLngBounds(upper,lower);
+        UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "PLACE_LATITUDE", latitude);
+        UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "PLACE_LONGITUDE", longitude);
+        LatLng upper = new LatLng(latitude, longitude);
+        LatLng lower = new LatLng(latitude, longitude);
+        LatLngBounds latlngBounds = new LatLngBounds(upper, lower);
         autocompleteFragmentAdress.setBoundsBias(latlngBounds);
 
         editor.commit();
     }
 
-    private void adressMapHandler(Place someAdress){
+    private void adressMapHandler(Place someAdress) {
 
 
-
-        Place place =  someAdress;
+        Place place = someAdress;
         Double latitude = place.getLatLng().latitude;
         Double longitude = place.getLatLng().longitude;
         String targetAdress = place.getAddress().toString();
@@ -284,17 +281,44 @@ public class NamePlaceFragment extends Fragment {
 
         autocompleteFragmentAdress.setText(targetAdress);
         try {
-            String cityName = getCityNameByCoordinates(latitude,longitude);
+            String cityName = getCityNameByCoordinates(latitude, longitude);
             autocompleteFragmentCity.setText(cityName);
-            editor.putString("PLACE_CITY",cityName);
+            editor.putString("PLACE_CITY", cityName);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-        editor.putString("PLACE_ADRESS",targetAdress);
-        UbiQuoBusinessUtils.putDoubleIntoEditor(editor,"PLACE_LATITUDE",latitude);
-        UbiQuoBusinessUtils.putDoubleIntoEditor(editor,"PLACE_LONGITUDE",longitude);
+        editor.putString("PLACE_ADRESS", targetAdress);
+        UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "PLACE_LATITUDE", latitude);
+        UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "PLACE_LONGITUDE", longitude);
 
         editor.commit();
+    }
+
+    private void loadRegisterData(){
+
+        //carica informazioni già presenti
+        SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        String lastName = sharedPreferences.getString("PLACE_NAME","NA");
+        String lastAdress = sharedPreferences.getString("PLACE_ADRESS","NA");
+        String lastCity = sharedPreferences.getString("PLACE_CITY","NA");
+
+        if(!lastName.isEmpty() && !lastName.equalsIgnoreCase("NA")){
+            name.setText(lastName);
+        }
+
+        if(!lastAdress.isEmpty() && !lastName.equalsIgnoreCase("NA")){
+            autocompleteFragmentAdress.setText(lastAdress);
+        }
+
+        if(!lastCity.isEmpty() && !lastName.equalsIgnoreCase("NA")){
+            autocompleteFragmentCity.setText(lastCity);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
     }
 }

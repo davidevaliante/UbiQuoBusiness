@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void loginAttempt(){
+    private void loginAttempt(){    
         String userMail = emailField.getText().toString().trim();
         String userPassword = passwordField.getText().toString().trim();
         if(!userMail.isEmpty() && !userPassword.isEmpty()){

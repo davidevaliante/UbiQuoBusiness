@@ -222,8 +222,8 @@ public class NewEventFirstPage extends Fragment {
 
     protected void saveData(){
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA", Context.MODE_PRIVATE);
-        sharedPreferences.edit().putString("EVENT_TITLE",eventName.getText().toString().trim()).commit();
-        sharedPreferences.edit().putString("EVENT_DESCRIPTION",eventDescription.getText().toString().trim()).commit();
+        sharedPreferences.edit().putString("EVENT_TITLE", UbiQuoBusinessUtils.capitalize(eventName.getText().toString().trim())).commit();
+        sharedPreferences.edit().putString("EVENT_DESCRIPTION",UbiQuoBusinessUtils.capitalize(eventDescription.getText().toString().trim())).commit();
         sharedPreferences.edit().putBoolean("EVENT_IS_FREE",isFree).commit();
 
         if(!isFree){

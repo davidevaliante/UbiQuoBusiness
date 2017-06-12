@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -16,6 +17,11 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.iid.FirebaseInstanceId;
+
+import java.text.DateFormatSymbols;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Created by akain on 09/06/2017.
@@ -120,6 +126,44 @@ public class UbiQuoBusinessUtils {
             }
         }
     }
+
+    public static String readableDate(String eventDate) {
+        String[] splittedDate = eventDate.split("/");
+        String eventDay = splittedDate[0];
+        String eventMonth = new DateFormatSymbols().getMonths()[Integer.parseInt(splittedDate[1]) - 1];
+        String date = eventDay + " " + eventMonth;
+        return date;
+
+    }
+
+    //tempo in millisecondi dell'orario effettivo
+    public static Long getTimeMillis(String dayString, String timeString)  {
+        Long timeMillis = 0L;
+        String completeTime = timeString+":00";
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+
+        String completeDate = dayString+" "+completeTime;
+        Date endDate = null;
+
+        try {
+            endDate = dateFormat.parse(completeDate);
+            timeMillis=endDate.getTime();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        Log.d("END_TIME** ","time "+endDate.getTime());
+
+        return endDate.getTime();
+
+
+    }
+
+    public static String capitalize(String s) {
+        if (s.length() == 0) return s;
+        return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
+    }
+
 
 
 

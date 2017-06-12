@@ -39,7 +39,8 @@
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Base.Theme.AppCompat" />
-        <activity android:name=".CreateEvent"></activity>
+        <activity android:name=".CreateEvent"
+            android:screenOrientation="portrait"></activity>
     </application>
 
 </manifest>

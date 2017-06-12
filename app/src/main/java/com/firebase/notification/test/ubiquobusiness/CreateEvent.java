@@ -98,6 +98,7 @@ public class CreateEvent extends AppCompatActivity {
         List<Fragment> fList = new ArrayList<Fragment>();
         fList.add(NewEventFirstPage.newInstance());
         fList.add(NewEventSecondPage.newInstance());
+        fList.add(ContactsFragment.newInstance());
 
 
         return fList;

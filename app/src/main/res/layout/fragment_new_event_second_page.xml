@@ -35,17 +35,15 @@
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                android:layout_marginTop="187dp">
+                android:layout_marginTop="209dp">
 
-                <EditText
-                    android:id="@+id/createEventName"
+                <TextView
+                    android:id="@+id/eventOrganizer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:backgroundTint="@color/pureWhite"
                     android:drawablePadding="16dp"
-                    android:hint="@string/string_place_name"
-                    android:imeOptions="actionNext"
-                    android:inputType="text"
+                    android:text="@string/string_place_name"
                     android:padding="18dp"
                     android:textColor="@color/light_grey" />
 
@@ -115,7 +113,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                android:layout_marginBottom="44dp">
+                android:layout_marginBottom="86dp"
+                app:layout_constraintHorizontal_bias="0.598">
 
                 <TextView
                     android:id="@+id/skillTextView"
@@ -135,37 +134,6 @@
             </RelativeLayout>
 
 
-
-            <LinearLayout
-                android:id="@+id/mapButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="55dp"
-                android:orientation="vertical"
-                android:paddingBottom="16dp"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:layout_marginBottom="8dp"
-                    android:src="@drawable/world_map_48" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginTop="16dp"
-                    android:gravity="center"
-                    android:text="Imposta il luogo dalla mappa"
-                    android:textColor="@color/pureWhite" />
-            </LinearLayout>
-
-
             <TextView
                 android:id="@+id/createDatePicker"
                 android:layout_width="0dp"
@@ -178,8 +146,8 @@
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
-                android:layout_marginTop="32dp"
-                app:layout_constraintTop_toBottomOf="@+id/cardView3" />
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginTop="80dp" />
 
             <View
                 android:id="@+id/divider"

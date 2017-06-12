@@ -12,15 +12,17 @@ public class Business {
     String name,adress,number,city,image;
     Double latitude,longitude;
     Integer rating,likes;
-    Long openingTime, closingTime;
+    String openingTime, closingTime;
     String arguments;
+    String token;
+    Long iscrizione;
 
 
     public Business(){
 
     }
 
-    public Business(String id, String contacts, String phones, String name, String adress, String number, String city, Double latitude, Double longitude, Integer rating, Integer likes, Long openingTime, Long closingTime, String image, String arguments) {
+    public Business(String id, String contacts, String phones, String name, String adress, String number, String city, Double latitude, Double longitude, Integer rating, Integer likes, String openingTime, String closingTime, String image, String arguments, String token, Long iscrizione) {
         this.contacts = contacts;
         this.phones = phones;
         this.name = name;
@@ -36,6 +38,24 @@ public class Business {
         this.image = image;
         this.arguments = arguments;
         this.id = id;
+        this.token = token;
+        this.iscrizione = iscrizione;
+    }
+
+    public Long getIscrizione() {
+        return iscrizione;
+    }
+
+    public void setIscrizione(Long iscrizione) {
+        this.iscrizione = iscrizione;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 
     public String getId() {
@@ -142,19 +162,19 @@ public class Business {
         this.likes = likes;
     }
 
-    public Long getOpeningTime() {
+    public String getOpeningTime() {
         return openingTime;
     }
 
-    public void setOpeningTime(Long openingTime) {
+    public void setOpeningTime(String openingTime) {
         this.openingTime = openingTime;
     }
 
-    public Long getClosingTime() {
+    public String getClosingTime() {
         return closingTime;
     }
 
-    public void setClosingTime(Long closingTime) {
+    public void setClosingTime(String closingTime) {
         this.closingTime = closingTime;
     }
 }

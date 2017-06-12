@@ -7,9 +7,9 @@
         <item name="android:colorPrimaryDark" tools:targetApi="lollipop">@color/colorPrimaryDark</item>
         <item name="android:colorAccent" tools:targetApi="lollipop">@color/colorAccent</item>
         <item   name="android:windowTranslucentNavigation" tools:targetApi="kitkat">true</item>
-        <item name="colorControlNormal">@color/pureWhite</item>
-        <item name="colorControlActivated">@color/pureWhite</item>
-        <item name="colorControlHighlight">@color/pureWhite</item>
+        <item name="colorControlNormal">@color/matte_blue</item>
+        <item name="colorControlActivated">@color/matte_blue</item>
+        <item name="colorControlHighlight">@color/matte_blue</item>
 
 
 
@@ -28,6 +28,8 @@
         <item name="android:background">@color/transparentColor</item>
 
     </style>
+
+
 
     <!-- ToolBar -->
 

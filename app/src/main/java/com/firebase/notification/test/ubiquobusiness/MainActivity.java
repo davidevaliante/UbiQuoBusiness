@@ -86,11 +86,11 @@ public class MainActivity extends AppCompatActivity {
 
         //inizializzatore Shared Preferences
         Context context = this;
-        SharedPreferences sharedPref = context.getSharedPreferences("UbiquoBusiness_UserData" , Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = this.getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
 
     }
 
-    private void loginAttempt(){    
+    private void loginAttempt(){
         String userMail = emailField.getText().toString().trim();
         String userPassword = passwordField.getText().toString().trim();
         if(!userMail.isEmpty() && !userPassword.isEmpty()){

@@ -1,0 +1,215 @@
+<LinearLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@drawable/main_gradient"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <android.support.v4.widget.NestedScrollView
+        android:fillViewport="true"
+        android:id="@+id/registration_first_viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true">
+
+        <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true"
+            android:focusableInTouchMode="true"
+            tools:context="com.firebase.notification.test.ubiquobusiness.Registration">
+
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cardView4"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="8dp"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_marginTop="187dp">
+
+                <EditText
+                    android:id="@+id/createEventName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:backgroundTint="@color/pureWhite"
+                    android:drawablePadding="16dp"
+                    android:hint="@string/string_place_name"
+                    android:imeOptions="actionNext"
+                    android:inputType="text"
+                    android:padding="18dp"
+                    android:textColor="@color/light_grey" />
+
+            </android.support.v7.widget.CardView>
+
+
+            <android.support.v7.widget.CardView
+                android:id="@+id/cardView3"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                android:layout_marginRight="8dp"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="22dp"
+                app:layout_constraintTop_toBottomOf="@+id/cardView2"
+                app:layout_constraintHorizontal_bias="0.0">
+
+                <fragment
+                    android:id="@+id/createEventAutoAdress"
+                    android:name="com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/cardView2" />
+            </android.support.v7.widget.CardView>
+
+            <android.support.v7.widget.CardView
+                android:background="@color/transparentColor"
+                android:id="@+id/cardView2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="8dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginTop="22dp"
+                app:layout_constraintTop_toBottomOf="@+id/cardView4"
+                app:layout_constraintHorizontal_bias="0.0">
+
+                <fragment
+                    android:id="@+id/createEventAutoCity"
+                    android:name="com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    app:layout_constraintTop_toBottomOf="parent"
+                    tools:layout_editor_absoluteX="8dp" />
+            </android.support.v7.widget.CardView>
+
+            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:id="@+id/buttonLayout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="64dp"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginStart="64dp"
+                android:background="@drawable/borded_button"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginBottom="44dp">
+
+                <TextView
+                    android:id="@+id/skillTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="64dp"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerInParent="true"
+                    android:layout_centerVertical="true"
+                    android:gravity="center"
+                    android:paddingBottom="16dp"
+                    android:paddingEnd="32dp"
+                    android:paddingStart="32dp"
+                    android:paddingTop="16dp"
+                    android:text="Avanti"
+                    android:textColor="@color/pureWhite"
+                    android:textSize="@dimen/abc_text_size_medium_material" />
+            </RelativeLayout>
+
+
+
+            <LinearLayout
+                android:id="@+id/mapButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="55dp"
+                android:orientation="vertical"
+                android:paddingBottom="16dp"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginBottom="8dp"
+                    android:src="@drawable/world_map_48" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginTop="16dp"
+                    android:gravity="center"
+                    android:text="Imposta il luogo dalla mappa"
+                    android:textColor="@color/pureWhite" />
+            </LinearLayout>
+
+
+            <TextView
+                android:id="@+id/createDatePicker"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:gravity="center"
+                android:text="Data evento"
+                android:textSize="18sp"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                android:layout_marginTop="32dp"
+                app:layout_constraintTop_toBottomOf="@+id/cardView3" />
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_marginLeft="32dp"
+                android:layout_marginRight="32dp"
+                android:layout_marginTop="17dp"
+                android:background="@color/pureWhite"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/createDatePicker" />
+
+            <TextView
+                android:id="@+id/createTimePicker"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:text="Orario d'inizio"
+                android:textSize="18sp"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/divider" />
+
+
+        </android.support.constraint.ConstraintLayout>
+    </android.support.v4.widget.NestedScrollView>
+</LinearLayout>

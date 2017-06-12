@@ -1,0 +1,233 @@
+<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.firebase.notification.test.ubiquobusiness.NewEventFirstPage"
+    android:background="@drawable/main_gradient"
+    android:fitsSystemWindows="true">
+
+    <android.support.constraint.ConstraintLayout
+        android:fitsSystemWindows="true"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageButton
+            android:id="@+id/cameraPicker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@color/transparentColor"
+            android:src="@drawable/camera_white_48"
+            app:layout_constraintBottom_toBottomOf="@+id/textView"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp" />
+
+        <com.mikhaellopez.circularimageview.CircularImageView
+            android:id="@+id/imagePicker"
+            android:layout_width="120dp"
+            android:layout_height="124dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="40dp"
+            app:civ_border_color="@color/transparentColor"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:gravity="center"
+            android:text="Carica una copertina per l'evento"
+            android:textColor="@color/pureWhite"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="185dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp" />
+
+        <android.support.v7.widget.CardView
+
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="38dp"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView"
+            android:id="@+id/cardView"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp">
+
+            <EditText
+                android:id="@+id/eventName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:backgroundTint="@color/pureWhite"
+                android:hint="Titolo evento"
+                android:paddingStart="16dp"
+                android:textColor="@color/dark_grey"
+                android:textColorHint="@color/light_grey" />
+
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="18dp"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cardView"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:id="@+id/cardView8">
+
+            <EditText
+                android:padding="16dp"
+                android:inputType="textMultiLine"
+                android:id="@+id/eventDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:backgroundTint="@color/pureWhite"
+                android:hint="Aggiungi una descrizione"
+                android:paddingStart="16dp"
+                android:textColor="@color/light_grey"
+                android:textColorHint="@color/light_grey" />
+        </android.support.v7.widget.CardView>
+
+        <co.ceryle.radiorealbutton.RadioRealButtonGroup
+            app:rrbg_backgroundColor="@color/transparentColor"
+            app:rrbg_bottomLineSize="0dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cardView8"
+            app:layout_constraintVertical_bias="0.0"
+            app:rrbg_animateDrawables_enter="overshoot"
+            app:rrbg_animateTexts_enter="overshoot"
+            app:rrbg_dividerColor="@color/pureWhite"
+            app:rrbg_dividerSize="1dp"
+            app:rrbg_radius="10dp"
+            app:rrbg_selectorColor="@color/pureWhite"
+            app:rrbg_selectorSize="1dp"
+            app:layout_constraintHorizontal_bias="0.0"
+            android:id="@+id/radioRealButtonGroup"
+            android:layout_marginEnd="8dp">
+
+            <co.ceryle.radiorealbutton.RadioRealButton
+                android:id="@+id/freeRadioButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:rrb_drawable="@drawable/free_vector_icon_white"
+                app:rrb_drawableHeight="36dp"
+                app:rrb_drawablePadding="16dp"
+                app:rrb_drawableWidth="36dp"
+                app:rrb_ripple="true"
+                app:rrb_rippleColor="@color/pureWhite"
+                app:rrb_text="Ingresso \ngratuito"
+                app:rrb_textColor="@color/pureWhite"
+                app:rrb_textGravity="center" />
+
+            <co.ceryle.radiorealbutton.RadioRealButton
+                android:id="@+id/payRadioButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:rrb_drawable="@drawable/money_stack_white"
+                app:rrb_drawableGravity="right"
+                app:rrb_drawableHeight="36dp"
+                app:rrb_drawablePadding="16dp"
+                app:rrb_drawableWidth="36dp"
+                app:rrb_ripple="true"
+                app:rrb_rippleColor="@color/pureWhite"
+                app:rrb_text="Ingresso \na pagamento"
+                app:rrb_textColor="@color/pureWhite"
+                app:rrb_textGravity="center" />
+        </co.ceryle.radiorealbutton.RadioRealButtonGroup>ù
+
+        <EditText
+            android:gravity="center"
+            android:id="@+id/eventPrice"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
+            android:layout_marginTop="20dp"
+            android:backgroundTint="@color/transparentColor"
+            android:hint="Aggiungi il prezzo d'ingresso in euro"
+            android:inputType="number"
+            android:maxLines="1"
+            android:paddingStart="16dp"
+            android:textColor="@color/pureWhite"
+            android:textColorHint="@color/pureWhite"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/radioRealButtonGroup"
+            app:layout_constraintHorizontal_bias="0.0" />
+
+        <RelativeLayout
+            android:id="@+id/eventNextFirst"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="64dp"
+            android:layout_marginLeft="64dp"
+            android:layout_marginRight="64dp"
+            android:layout_marginStart="64dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/borded_button"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/radioRealButtonGroup"
+            app:layout_constraintVertical_bias="1.0">
+
+            <TextView
+                android:id="@+id/skillTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="64dp"
+                android:layout_centerHorizontal="true"
+                android:layout_centerInParent="true"
+                android:layout_centerVertical="true"
+                android:gravity="center"
+                android:paddingBottom="16dp"
+                android:paddingEnd="32dp"
+                android:paddingStart="32dp"
+                android:paddingTop="16dp"
+                android:text="Avanti"
+                android:textColor="@color/pureWhite"
+                android:textSize="@dimen/abc_text_size_medium_material" />
+        </RelativeLayout>
+
+    </android.support.constraint.ConstraintLayout>
+
+</android.support.v4.widget.NestedScrollView>

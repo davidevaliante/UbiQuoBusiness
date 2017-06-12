@@ -82,7 +82,7 @@ public class OpeningClosing extends Fragment {
                     public void onTimeSet(TimePickerDialog view, int hourOfDay, int minute, int second) {
                         String opening = UbiQuoBusinessUtils.hourFormatter(hourOfDay,minute);
                         openingTime.setText("Apertura\n"+opening);
-                        SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
                         sharedPreferences.edit().putString("PLACE_OPENING_TIME",opening).commit();
 
 
@@ -101,7 +101,7 @@ public class OpeningClosing extends Fragment {
                     public void onTimeSet(TimePickerDialog view, int hourOfDay, int minute, int second) {
                         String closing = UbiQuoBusinessUtils.hourFormatter(hourOfDay,minute);
                         closingTime.setText("Chiusura\n"+closing);
-                        SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+                        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
                         sharedPreferences.edit().putString("PLACE_CLOSING_TIME",closing).commit();
 
                     }
@@ -174,7 +174,7 @@ public class OpeningClosing extends Fragment {
             if (resultCode == RESULT_OK) {
                 avatar.setVisibility(View.VISIBLE);
                 avatar.setImageURI(result.getUri());
-                SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
                 sharedPreferences.edit().putString("PLACE_AVATAR",result.getUri().toString()).commit();
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
@@ -184,7 +184,7 @@ public class OpeningClosing extends Fragment {
 
     private Boolean canGoNext(){
         Boolean canGoNext = true;
-        SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
         String startingTime = sharedPreferences.getString("PLACE_OPENING_TIME","NA");
         String endingTime = sharedPreferences.getString("PLACE_CLOSING_TIME","NA");
         String imageUri = sharedPreferences.getString("PLACE_AVATAR","NA");
@@ -198,7 +198,7 @@ public class OpeningClosing extends Fragment {
     }
 
     private void loadOldData(){
-        SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
         String start = sharedPreferences.getString("PLACE_OPENING_TIME","NA");
         String end = sharedPreferences.getString("PLACE_CLOSING_TIME","NA");
         if(!start.isEmpty() && !start.equalsIgnoreCase("NA")){

@@ -4,9 +4,11 @@ package com.firebase.notification.test.ubiquobusiness;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,16 +18,26 @@ import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.squareup.haha.perflib.Main;
+
+import java.io.File;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import es.dmoral.toasty.Toasty;
+import id.zelory.compressor.Compressor;
 
 
 /**
@@ -73,11 +85,12 @@ public class ArgumentsImageFragment extends Fragment {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 if(firebaseAuth.getCurrentUser() != null) {
-                    Intent toUserPage = new Intent(getActivity(), MainUserPage.class);
-                    toUserPage.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    Log.d("LOGGED ID : ",firebaseAuth.getCurrentUser().getUid());
+                    Intent toUserPage = new Intent(getContext(), MainUserPage.class);
                     startActivity(toUserPage);
+                    getActivity().finish();
                 }else{
-
+                    Log.d("USER LOGGED OUT","NO USER LOGGED IN");
                 }
             }
         };
@@ -91,20 +104,10 @@ public class ArgumentsImageFragment extends Fragment {
                 if(dataHasBeenSaved()){
                     String mail = email.getText().toString().trim();
                     String password = confirmPassword.getText().toString().trim();
-                    Toasty.success(getActivity(),"Cool shit dude", Toast.LENGTH_SHORT).show();
-                    SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+                    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
                     sharedPreferences.edit().putString("EMAIL", mail);
-                    mAuth.createUserWithEmailAndPassword(mail,password).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                        @Override
-                        public void onSuccess(AuthResult authResult) {
-                            Toasty.success(getActivity(),"Registrazione effettuata !",Toast.LENGTH_SHORT).show();
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toasty.error(getActivity(),"Registrazione fallita !",Toast.LENGTH_SHORT).show();
-                        }
-                    });
+                    writeNewPlace();
+
                 }else{
 
                 }
@@ -134,7 +137,7 @@ public class ArgumentsImageFragment extends Fragment {
             return false;
         }
 
-        SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
         String placeName = sharedPreferences.getString("PLACE_NAME","NA");
         String placeCity = sharedPreferences.getString("PLACE_CITY","NA");
         String placeAdress = sharedPreferences.getString("PLACE_ADRESS","NA");
@@ -160,5 +163,58 @@ public class ArgumentsImageFragment extends Fragment {
         super.onDestroyView();
         mAuth.removeAuthStateListener(authStateListener);
         unbinder.unbind();
+    }
+
+    //TODO finire metodo per scrivere nuovo locale con tutti i callback necessari per il fallimento ed i dati mancanti
+    private void writeNewPlace(){
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
+        final String placeName = sharedPreferences.getString("PLACE_NAME","NA");
+        final String placeCity = sharedPreferences.getString("PLACE_CITY","NA");
+        final String placeAdress = sharedPreferences.getString("PLACE_ADRESS","NA");
+        final String placeId = sharedPreferences.getString("PLACE_ID","NA");
+        final String placePhone = sharedPreferences.getString("PLACE_PHONE","NA");
+        String imageUri = sharedPreferences.getString("PLACE_AVATAR","NA");
+        final Double latitude = UbiQuoBusinessUtils.getDoubleFromEditor(sharedPreferences,"PLACE_LATITUDE",0.0);
+        final Double longitude = UbiQuoBusinessUtils.getDoubleFromEditor(sharedPreferences,"PLACE_LONGITUDE",0.0);
+        final String openingTime = sharedPreferences.getString("PLACE_OPENING_TIME","NA");
+        final String closingTime = sharedPreferences.getString("PLACE_CLOSING_TIME","NA");
+        final Long iscrizione = System.currentTimeMillis();
+        String mail = email.getText().toString().trim();
+        String password = confirmPassword.getText().toString().trim();
+        Uri avatar = Uri.parse(imageUri);
+
+        //recupera l'immagine croppata e la e la comprime in un file
+        final File compressedFile = Compressor.getDefault(getActivity()).compressToFile(new File(avatar.getPath()));
+        final String uniqueStoragePath = avatar.getLastPathSegment()+placeName+placeCity;
+
+        final StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("Business_avatar");
+        final DatabaseReference businessRef = FirebaseDatabase.getInstance().getReference().child("Businesses");
+
+        mAuth.createUserWithEmailAndPassword(mail,password).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+            @Override
+            public void onSuccess(AuthResult authResult) {
+                Toasty.success(getActivity(),"Registrazione effettuata !",Toast.LENGTH_SHORT).show();
+                //una volta registrato le autorizzazioni sono disponibili per la scrittura nel database
+
+                storageReference.child(uniqueStoragePath).putFile(Uri.fromFile(compressedFile)).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        String imagePath = taskSnapshot.getDownloadUrl().toString();
+                        String id = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                        Business newBusiness = new Business(placeId,"NA","NA",placeName,placeAdress,placePhone,placeCity,latitude,longitude,0,0,openingTime,closingTime,imagePath,"NA","no_token",iscrizione);
+                        businessRef.child(id).setValue(newBusiness);
+                    }
+                });
+
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toasty.error(getActivity(),"Registrazione fallita !",Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+
     }
 }

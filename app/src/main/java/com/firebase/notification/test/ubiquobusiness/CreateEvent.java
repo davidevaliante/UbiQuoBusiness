@@ -2,20 +2,15 @@ package com.firebase.notification.test.ubiquobusiness;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.design.widget.FloatingActionButton;
+import android.os.PersistableBundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.view.View;
-import android.view.WindowManager;
-
-import com.google.firebase.auth.FirebaseAuth;
-import com.squareup.haha.perflib.Main;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,47 +19,26 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-public class MainUserPage extends AppCompatActivity {
+public class CreateEvent extends AppCompatActivity {
 
-
-    @BindView(R.id.mainUserPageViewPager)
-    ViewPager viewPager;
-    @BindView(R.id.fabAdd)
-    FloatingActionButton fabAdd;
-
-    private FirebaseAuth mAuth;
-    private PagerAdapter pagerAdapter;
+    @BindView(R.id.newEvenViewPager)
+    CustomViewPager newEvenViewPager;
+    private PagerAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_user_page);
+        setContentView(R.layout.activity_create_event);
+        SharedPreferences sharedPreferences = getSharedPreferences("LAST_EVENT_DATA",Context.MODE_PRIVATE);
+
         ButterKnife.bind(this);
-        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
-        mAuth = FirebaseAuth.getInstance();
-        List<Fragment> userPageFragments = initializeFragments();
-        pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(), userPageFragments);
-        viewPager.setAdapter(pagerAdapter);
+        List<Fragment> createEventFragments = initializeFragments();
 
-        fabAdd.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent newEvent = new Intent(MainUserPage.this,CreateEvent.class);
-                startActivity(newEvent);
-            }
-        });
+        adapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(),createEventFragments);
+        newEvenViewPager.setAdapter(adapter);
+        newEvenViewPager.setPagingEnabled(false);
 
-
-        //token refresher
-        final Handler firebaseTokenHandler = new Handler();
-        firebaseTokenHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                //refresha il token
-                UbiQuoBusinessUtils.refreshCurrentUserToken(getApplication());
-            }
-        }, 5000);
 
     }
 
@@ -95,6 +69,10 @@ public class MainUserPage extends AppCompatActivity {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        super.onSaveInstanceState(outState, outPersistentState);
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -102,16 +80,27 @@ public class MainUserPage extends AppCompatActivity {
 
     }
 
+    @Override
+    public void onBackPressed() {
+        if (newEvenViewPager.getCurrentItem() == 0) {
+            // If the user is currently looking at the first step, allow the system to handle the
+            // Back button. This calls finish() on this activity and pops the back stack.
+           NewEventFirstPage firstPage = (NewEventFirstPage)getSupportFragmentManager().getFragments().get(0);
+            firstPage.saveData();
+            super.onBackPressed();
+        } else {
+            // Otherwise, select the previous step.
+            newEvenViewPager.setCurrentItem(newEvenViewPager.getCurrentItem() - 1);
+        }
+    }
+
     private List<Fragment> initializeFragments() {
         List<Fragment> fList = new ArrayList<Fragment>();
-        fList.add(ProposalsFragement.newInstance());
+        fList.add(NewEventFirstPage.newInstance());
+        fList.add(NewEventSecondPage.newInstance());
 
 
         return fList;
     }
 
-    private void logMeOut() {
-        FirebaseAuth.getInstance().signOut();
-        finish();
-    }
 }

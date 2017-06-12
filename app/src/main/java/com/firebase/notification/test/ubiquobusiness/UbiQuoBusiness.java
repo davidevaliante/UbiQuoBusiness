@@ -2,6 +2,8 @@ package com.firebase.notification.test.ubiquobusiness;
 
 import android.app.Application;
 
+import com.google.firebase.database.FirebaseDatabase;
+
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 /**
@@ -12,6 +14,12 @@ public class UbiQuoBusiness extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+
+        //inizializzatore per il caching di firebase
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+
+        //Inizializzatore della libreria per i font
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                 .setDefaultFontPath("fonts/Hero.otf")
                 .setFontAttrId(R.attr.fontPath)

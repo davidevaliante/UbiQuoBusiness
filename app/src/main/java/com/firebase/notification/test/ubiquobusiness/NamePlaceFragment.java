@@ -171,7 +171,7 @@ public class NamePlaceFragment extends Fragment {
     }
 
     private Boolean canGoNext() {
-        SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
 
         String mName = name.getText().toString().trim();
         String city = sharedPreferences.getString("PLACE_CITY", "NO_CITY_INSERT_BY_USER");
@@ -206,8 +206,8 @@ public class NamePlaceFragment extends Fragment {
 
 
         //update  shared preferences
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
 
         try {
             String placeCity = getCityNameByCoordinates(latitude, longitude);
@@ -246,8 +246,8 @@ public class NamePlaceFragment extends Fragment {
         Double longitude = place.getLatLng().longitude;
 
         //update  shared preferences
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
 
         try {
             String cityName = getCityNameByCoordinates(latitude, longitude);
@@ -276,8 +276,8 @@ public class NamePlaceFragment extends Fragment {
         Double longitude = place.getLatLng().longitude;
         String targetAdress = place.getAddress().toString();
         //update  shared preferences
-        SharedPreferences sharedPref = getActivity().getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
 
         autocompleteFragmentAdress.setText(targetAdress);
         try {
@@ -298,7 +298,7 @@ public class NamePlaceFragment extends Fragment {
     private void loadRegisterData(){
 
         //carica informazioni già presenti
-        SharedPreferences sharedPreferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
         String lastName = sharedPreferences.getString("PLACE_NAME","NA");
         String lastAdress = sharedPreferences.getString("PLACE_ADRESS","NA");
         String lastCity = sharedPreferences.getString("PLACE_CITY","NA");

@@ -32,6 +32,7 @@
                 app:layout_constraintTop_toTopOf="parent">
 
                 <EditText
+                    android:backgroundTint="@color/pureWhite"
                     android:textColor="@color/light_grey"
                     android:id="@+id/placeEmail"
                     android:layout_width="match_parent"
@@ -58,6 +59,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/cardView5">
 
                 <EditText
+                    android:backgroundTint="@color/pureWhite"
                     android:textColor="@color/light_grey"
                     android:id="@+id/password"
                     android:layout_width="match_parent"
@@ -83,6 +85,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/cardView6">
 
                 <EditText
+                    android:backgroundTint="@color/pureWhite"
                     android:textColor="@color/light_grey"
                     android:id="@+id/confirmPassword"
                     android:layout_width="match_parent"

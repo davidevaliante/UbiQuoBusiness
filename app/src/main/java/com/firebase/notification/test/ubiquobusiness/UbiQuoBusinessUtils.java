@@ -9,11 +9,23 @@ import android.support.v4.content.ContextCompat;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
+
 /**
  * Created by akain on 09/06/2017.
  */
 
 public class UbiQuoBusinessUtils {
+
+    private static SharedPreferences userData;
+
+
     public UbiQuoBusinessUtils(){
 
     }
@@ -70,6 +82,43 @@ public class UbiQuoBusinessUtils {
 
         return "00:00";
 
+    }
+
+    public static void refreshCurrentUserToken(Context context){
+
+        //se l'auth non è null
+        if(FirebaseAuth.getInstance().getCurrentUser() != null) {
+        userData = context.getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
+            final String userToken = FirebaseInstanceId.getInstance().getToken();
+            final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+            //solo se userToken esiste ed utente ancora loggato
+            if (!userId.isEmpty() && !userToken.isEmpty()) {
+                final DatabaseReference userReference = FirebaseDatabase.getInstance().getReference().child("Businesses")
+                        .child(userId);
+                DatabaseReference tokenReference = FirebaseDatabase.getInstance().getReference().child("Token").child(userId).child("user_token");
+
+                //aggiorna shared preferences
+                userData.edit().putString("USER_TOKEN", userToken).commit();
+                //aggiorna nodo del database
+                tokenReference.setValue(userToken);
+
+                //aggiorna token nel profilo utente
+                userReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Business user = dataSnapshot.getValue(Business.class);
+                        user.setToken(userToken);
+                        userReference.setValue(user);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        }
     }
 
 

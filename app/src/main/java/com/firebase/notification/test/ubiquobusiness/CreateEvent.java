@@ -24,6 +24,7 @@ public class CreateEvent extends AppCompatActivity {
     @BindView(R.id.newEvenViewPager)
     CustomViewPager newEvenViewPager;
     private PagerAdapter adapter;
+    protected Bundle proposal;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +33,8 @@ public class CreateEvent extends AppCompatActivity {
         SharedPreferences sharedPreferences = getSharedPreferences("LAST_EVENT_DATA",Context.MODE_PRIVATE);
 
         ButterKnife.bind(this);
+
+        proposal = getIntent().getBundleExtra("proposal_bundle");
 
         List<Fragment> createEventFragments = initializeFragments();
 

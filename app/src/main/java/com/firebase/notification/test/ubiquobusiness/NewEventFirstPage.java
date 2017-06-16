@@ -190,45 +190,85 @@ public class NewEventFirstPage extends Fragment {
     }
 
     private void loadLastData(){
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA", Context.MODE_PRIVATE);
-        String imageUri = sharedPreferences.getString("EVENT_IMAGE","NA");
-        String title = sharedPreferences.getString("EVENT_TITLE","NA");
-        String description = sharedPreferences.getString("EVENT_DESCRIPTION","NA");
-        Boolean free = sharedPreferences.getBoolean("EVENT_IS_FREE",true);
+        Bundle bundle = ((CreateEvent)getActivity()).proposal;
 
-        if(!free){
-            Integer price = sharedPreferences.getInt("EVENT_PRICE",0);
-            radioRealButtonGroup.setPosition(1);
-            eventPrice.setVisibility(View.VISIBLE);
-            eventPrice.setText(""+price);
-            isFree = false;
-        }
+        if(bundle == null) {
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA", Context.MODE_PRIVATE);
+            String imageUri = sharedPreferences.getString("EVENT_IMAGE", "NA");
+            String title = sharedPreferences.getString("EVENT_TITLE", "NA");
+            String description = sharedPreferences.getString("EVENT_DESCRIPTION", "NA");
+            Boolean free = sharedPreferences.getBoolean("EVENT_IS_FREE", true);
 
-        if(!title.equalsIgnoreCase("NA") && !title.isEmpty()){
-            eventName.setText(title);
-        }
+            if (!free) {
+                Integer price = sharedPreferences.getInt("EVENT_PRICE", 0);
+                radioRealButtonGroup.setPosition(1);
+                eventPrice.setVisibility(View.VISIBLE);
+                eventPrice.setText("" + price);
+                isFree = false;
+            }
 
-        if(!description.equalsIgnoreCase("NA") && !description.isEmpty()){
-            eventDescription.setText(description);
-        }
+            if (!title.equalsIgnoreCase("NA") && !title.isEmpty()) {
+                eventName.setText(title);
+            }
 
-        if(!imageUri.equalsIgnoreCase("NA")) {
-            imagePicker.setVisibility(View.VISIBLE);
-            imagePicker.setBorderColor(R.color.colorAccent);
-            Uri uri = Uri.parse(imageUri);
-            imagePicker.setImageURI(uri);
+            if (!description.equalsIgnoreCase("NA") && !description.isEmpty()) {
+                eventDescription.setText(description);
+            }
+
+            if (!imageUri.equalsIgnoreCase("NA")) {
+                imagePicker.setVisibility(View.VISIBLE);
+                imagePicker.setBorderColor(R.color.colorAccent);
+                Uri uri = Uri.parse(imageUri);
+                imagePicker.setImageURI(uri);
+            }
+        }else{
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA", Context.MODE_PRIVATE);
+            String title = bundle.getString("title","NA");
+            String description = bundle.getString("description","NA");
+            String proposalId = bundle.getString("id","NA");
+            Boolean free = sharedPreferences.getBoolean("EVENT_IS_FREE", true);
+
+
+
+            if(!proposalId.isEmpty() && !proposalId.equalsIgnoreCase("NA")){
+                sharedPreferences.edit().putString("PROPOSAL_ID",proposalId).commit();
+            }
+
+            if (!free) {
+                Integer price = sharedPreferences.getInt("EVENT_PRICE", 0);
+                radioRealButtonGroup.setPosition(1);
+                eventPrice.setVisibility(View.VISIBLE);
+                eventPrice.setText("" + price);
+                isFree = false;
+            }
+
+            if (!title.equalsIgnoreCase("NA") && !title.isEmpty()) {
+                eventName.setText(title);
+            }
+
+            if (!description.equalsIgnoreCase("NA") && !description.isEmpty()) {
+                eventDescription.setText(description);
+            }
+
+
+
+
         }
     }
 
     protected void saveData(){
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA", Context.MODE_PRIVATE);
-        sharedPreferences.edit().putString("EVENT_TITLE", UbiQuoBusinessUtils.capitalize(eventName.getText().toString().trim())).commit();
-        sharedPreferences.edit().putString("EVENT_DESCRIPTION",UbiQuoBusinessUtils.capitalize(eventDescription.getText().toString().trim())).commit();
-        sharedPreferences.edit().putBoolean("EVENT_IS_FREE",isFree).commit();
+        Bundle bundle = ((CreateEvent)getActivity()).proposal;
+        //salva solo se non derivato da proposta
+        if(bundle == null) {
+            SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA", Context.MODE_PRIVATE);
+            sharedPreferences.edit().putString("EVENT_TITLE", UbiQuoBusinessUtils.capitalize(eventName.getText().toString().trim())).commit();
+            sharedPreferences.edit().putString("EVENT_DESCRIPTION", UbiQuoBusinessUtils.capitalize(eventDescription.getText().toString().trim())).commit();
+            sharedPreferences.edit().putBoolean("EVENT_IS_FREE", isFree).commit();
 
-        if(!isFree){
-            if(!eventPrice.getText().toString().trim().isEmpty()) {
-                sharedPreferences.edit().putInt("EVENT_PRICE", Integer.valueOf(eventPrice.getText().toString().trim())).commit();
+            if (!isFree) {
+                if (!eventPrice.getText().toString().trim().isEmpty()) {
+                    sharedPreferences.edit().putInt("EVENT_PRICE", Integer.valueOf(eventPrice.getText().toString().trim())).commit();
+                }
             }
         }
     }

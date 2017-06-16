@@ -41,6 +41,9 @@
             android:theme="@style/Base.Theme.AppCompat" />
         <activity android:name=".CreateEvent"
             android:screenOrientation="portrait"></activity>
+
+        <activity android:name=".CreateProposal"
+            android:screenOrientation="portrait"></activity>
     </application>
 
 </manifest>

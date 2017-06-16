@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/proposalCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:layout_marginLeft="16dp"
+    android:layout_marginRight="16dp"
+    android:layout_marginTop="8dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+        <ImageView
+            android:id="@+id/argument_icon"
+            android:layout_width="62dp"
+            android:layout_height="62dp"
+            android:layout_weight="1"
+            android:padding="8dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/music_blue_icon_46" />
+
+        <LinearLayout
+            android:id="@+id/headerLayout"
+            android:layout_width="match_parent"
+            android:layout_height="62dp"
+            android:layout_toRightOf="@+id/argument_icon"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/proposalTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:gravity="center_vertical"
+                android:maxLength="24"
+                android:maxLines="1"
+                android:padding="16dp"
+                android:text="Titolo proposta"
+                android:textColor="@color/blackish" />
+
+            <TextView
+                android:id="@+id/proposalTime"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:padding="16dp"
+                android:text="24h"
+                android:textColor="@color/light_grey" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/proposalContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/headerLayout">
+
+            <ImageButton
+
+                android:id="@+id/proposalOptions"
+                android:layout_width="62dp"
+                android:layout_height="62dp"
+                android:background="@color/transparentColor"
+                android:scaleType="centerInside"
+                android:src="@drawable/option_dots_16"
+                />
+
+            <TextView
+                android:id="@+id/proposalDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:gravity="start"
+                android:maxLines="40"
+                android:paddingLeft="16dp"
+                android:paddingRight="32dp"
+                android:textColor="@color/light_grey" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_marginTop="6dp"
+            android:layout_below="@+id/proposalContent"
+            android:id="@+id/separator_line"
+            android:background="@color/pureBlack"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"/>
+
+        <LinearLayout
+            android:id="@+id/interactionsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/separator_line"
+            android:orientation="horizontal">
+
+            <TextView
+                android:textSize="12sp"
+                android:id="@+id/numberOfInterest"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:padding="16dp"
+                android:text="147 interessati"
+                android:textColor="@color/matte_blue" />
+
+            <TextView
+                android:id="@+id/placesNotified"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:padding="16dp"
+                android:text="3 locali notificati" />
+
+
+        </LinearLayout>
+
+        <RelativeLayout
+            android:id="@+id/interestButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/interactionsLayout"
+            android:layout_weight="1"
+            android:background="@color/matte_blue">
+
+            <TextView
+                android:id="@+id/buttonInterest"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:drawablePadding="18dp"
+                android:drawableRight="@drawable/vector_right_arrow_18"
+                android:gravity="center"
+                android:padding="8dp"
+                android:text="Interessa anche a me !"
+                android:textColor="@color/pureWhite" />
+
+
+        </RelativeLayout>
+
+
+    </RelativeLayout>
+</android.support.v7.widget.CardView>

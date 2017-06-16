@@ -1,5 +1,47 @@
-<android.support.v7.widget.RecyclerView
-    android:id="@+id/proposalsRecyclerView"
-    android:layout_height="match_parent"
+<android.support.design.widget.CoordinatorLayout
+    android:id="@+id/coordinator"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android" />
+    android:layout_height="match_parent"
+    tools:context="com.firebase.notification.test.ubiquobusiness.ProposalsFragement">
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/proposalRecycler"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        tools:context="com.finder.harlequinapp.valiante.harlequin.ProposalFragment">
+
+
+    </android.support.v7.widget.RecyclerView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:layout_gravity="bottom|end"
+        android:id="@+id/mainFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="90dp"
+        android:layout_marginRight="16dp"
+        android:backgroundTint="@color/matte_blue"
+        android:src="@drawable/vector_plus_button"
+        app:fabSize="normal" />
+
+    <com.hlab.fabrevealmenu.view.FABRevealMenu
+        android:id="@+id/fabAdd"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/mainFab"
+        app:animateItems="true"
+        app:menuBackgroundColor="@color/matte_blue"
+        app:menuDirection="up"
+        app:menuTitleTextColor="@color/pureWhite"
+        app:overlayBackground="@color/shaded_40"
+        app:showOverlay="true" />
+
+</android.support.design.widget.CoordinatorLayout>

@@ -119,7 +119,8 @@ public class ContactsFragment extends Fragment {
 
 
     private void submitEvent(){
-
+        //prima di tutto si stabilisce se è un evento ex novo oppure derivato da una proposta
+        final Bundle bundle = ((CreateEvent)getActivity()).proposal;
         //progressBar
         myProgressBar = new ProgressDialog(getActivity(),android.R.style.Theme_DeviceDefault_Light_Dialog_Alert);
         myProgressBar.setMessage("Caricamento in corso");
@@ -133,6 +134,8 @@ public class ContactsFragment extends Fragment {
         final String city = sharedPreferences.getString("EVENT_CITY","NA");
         final String adress = sharedPreferences.getString("EVENT_ADRESS","NA");
         final String id = sharedPreferences.getString("EVENT_ORGANIZER_ID","NA");
+
+
         final Double latitude = UbiQuoBusinessUtils.getDoubleFromEditor(sharedPreferences,"EVENT_LATITUDE",0.0);
         final Double longitude = UbiQuoBusinessUtils.getDoubleFromEditor(sharedPreferences,"EVENT_LONGITUDE",0.0);
         final Long timeMillies = UbiQuoBusinessUtils.getTimeMillis(date,time);
@@ -171,47 +174,96 @@ public class ContactsFragment extends Fragment {
             public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                 if(task.isComplete() && task.isSuccessful()){
 
-                    //dati dinamici
-                    String downloadUrl = task.getResult().getDownloadUrl().toString();
-                    DynamicData newDinamicData = new DynamicData(0,0,0,0,0,0,timeMillies,floatPrice,title,downloadUrl,organizer,isFree,0);
-                    DatabaseReference pushRef = FirebaseDatabase.getInstance().getReference().child("Events").child("Dynamic").child(city).push();
-                    String pushId = pushRef.getKey();
+                    if(bundle == null) {
+                        //dati dinamici
+                        String downloadUrl = task.getResult().getDownloadUrl().toString();
+                        DynamicData newDinamicData = new DynamicData(0, 0, 0, 0, 0, 0, timeMillies, floatPrice, title, downloadUrl, organizer, isFree, 0);
+                        DatabaseReference pushRef = FirebaseDatabase.getInstance().getReference().child("Events").child("Dynamic").child(city).push();
+                        String pushId = pushRef.getKey();
 
-                    pushRef.setValue(newDinamicData);
+                        pushRef.setValue(newDinamicData);
 
-                     ArrayList<String> names = new ArrayList<>();
-                     ArrayList<String> numbers = new ArrayList<>();
-                    if(!phone.equalsIgnoreCase("NA")){
-                        names.add(UbiQuoBusinessUtils.capitalize(organizer));
-                        numbers.add(phone);
+                        ArrayList<String> names = new ArrayList<>();
+                        ArrayList<String> numbers = new ArrayList<>();
+                        if (!phone.equalsIgnoreCase("NA")) {
+                            names.add(UbiQuoBusinessUtils.capitalize(organizer));
+                            numbers.add(phone);
+                        }
+
+                        if (!firstName.isEmpty() && !firstContact.isEmpty()) {
+                            names.add(UbiQuoBusinessUtils.capitalize(firstName));
+                            numbers.add(firstContact);
+                        }
+                        if (!secondName.isEmpty() && !secondContact.isEmpty()) {
+                            names.add(UbiQuoBusinessUtils.capitalize(secondName));
+                            numbers.add(secondContact);
+                        }
+                        if (!thirdName.isEmpty() && !thirdContact.isEmpty()) {
+                            names.add(UbiQuoBusinessUtils.capitalize(thirdName));
+                            numbers.add(thirdContact);
+                        }
+
+                        //dati statici
+                        StaticData newStaticData = new StaticData(desc, names, numbers);
+                        DatabaseReference staticRef = FirebaseDatabase.getInstance().getReference().child("Events").child("Static").child(city);
+                        staticRef.child(pushId).setValue(newStaticData);
+
+                        MapInfo newMapInfo = new MapInfo(latitude, longitude, organizer, id, title, floatPrice, phone, 0, timeMillies, adress, pushId);
+                        DatabaseReference mapReference = FirebaseDatabase.getInstance().getReference().child("MapData").child(city).child(pushId);
+                        mapReference.setValue(newMapInfo);
+
+                        Toasty.success(getActivity(), "Evento aggiunto con successo !", Toast.LENGTH_SHORT, true).show();
+                        getActivity().getSharedPreferences("LAST_EVENT_DATA", 0).edit().clear().commit();
+                        myProgressBar.dismiss();
+                        getActivity().finish();
+
+
+                    }else{
+                        final String proposalId = bundle.getString("id", "NA");
+                        //dati dinamici
+                        String downloadUrl = task.getResult().getDownloadUrl().toString();
+                        DynamicData newDinamicData = new DynamicData(0, 0, 0, 0, 0, 0, timeMillies, floatPrice, title, downloadUrl, organizer, isFree, 0);
+                        String pushId = proposalId;
+                        DatabaseReference pushRef = FirebaseDatabase.getInstance().getReference().child("Events").child("Dynamic").child(city).child(proposalId);
+
+
+                        pushRef.setValue(newDinamicData);
+
+                        ArrayList<String> names = new ArrayList<>();
+                        ArrayList<String> numbers = new ArrayList<>();
+                        if (!phone.equalsIgnoreCase("NA")) {
+                            names.add(UbiQuoBusinessUtils.capitalize(organizer));
+                            numbers.add(phone);
+                        }
+
+                        if (!firstName.isEmpty() && !firstContact.isEmpty()) {
+                            names.add(UbiQuoBusinessUtils.capitalize(firstName));
+                            numbers.add(firstContact);
+                        }
+                        if (!secondName.isEmpty() && !secondContact.isEmpty()) {
+                            names.add(UbiQuoBusinessUtils.capitalize(secondName));
+                            numbers.add(secondContact);
+                        }
+                        if (!thirdName.isEmpty() && !thirdContact.isEmpty()) {
+                            names.add(UbiQuoBusinessUtils.capitalize(thirdName));
+                            numbers.add(thirdContact);
+                        }
+
+                        //dati statici
+                        StaticData newStaticData = new StaticData(desc, names, numbers);
+                        DatabaseReference staticRef = FirebaseDatabase.getInstance().getReference().child("Events").child("Static").child(city);
+                        staticRef.child(pushId).setValue(newStaticData);
+
+                        MapInfo newMapInfo = new MapInfo(latitude, longitude, organizer, id, title, floatPrice, phone, 0, timeMillies, adress, pushId);
+                        DatabaseReference mapReference = FirebaseDatabase.getInstance().getReference().child("MapData").child(city).child(pushId);
+                        mapReference.setValue(newMapInfo);
+
+                        Toasty.success(getActivity(), "Evento aggiunto con successo !", Toast.LENGTH_SHORT, true).show();
+                        getActivity().getSharedPreferences("LAST_EVENT_DATA", 0).edit().clear().commit();
+                        FirebaseDatabase.getInstance().getReference().child("NotificationForProposal").child(city).child(proposalId).setValue(true);
+                        myProgressBar.dismiss();
+                        getActivity().finish();
                     }
-
-                    if(!firstName.isEmpty() && !firstContact.isEmpty()){
-                        names.add(UbiQuoBusinessUtils.capitalize(firstName));
-                        numbers.add(firstContact);
-                    }
-                    if(!secondName.isEmpty() && !secondContact.isEmpty()){
-                        names.add(UbiQuoBusinessUtils.capitalize(secondName));
-                        numbers.add(secondContact);
-                    }
-                    if(!thirdName.isEmpty() && !thirdContact.isEmpty()){
-                        names.add(UbiQuoBusinessUtils.capitalize(thirdName));
-                        numbers.add(thirdContact);
-                    }
-
-                    //dati statici
-                    StaticData newStaticData = new StaticData(desc,names,numbers);
-                    DatabaseReference staticRef = FirebaseDatabase.getInstance().getReference().child("Events").child("Static").child(city);
-                    staticRef.child(pushId).setValue(newStaticData);
-
-                    MapInfo newMapInfo = new MapInfo(latitude,longitude,organizer,id,title,floatPrice,phone,0,timeMillies,adress,pushId);
-                    DatabaseReference mapReference = FirebaseDatabase.getInstance().getReference().child("MapData").child(city).child(pushId);
-                    mapReference.setValue(newMapInfo);
-
-                    Toasty.success(getActivity(),"Evento aggiunto con successo !",Toast.LENGTH_SHORT,true).show();
-                    getActivity().getSharedPreferences("LAST_EVENT_DATA",0).edit().clear().commit();
-                    myProgressBar.dismiss();
-                    getActivity().finish();
                 }
                 if (!task.isSuccessful()){
                     Toasty.error(getActivity(),"C'è stato un errore durante il caricamento del nuovo evento",Toast.LENGTH_SHORT,true).show();
@@ -220,4 +272,21 @@ public class ContactsFragment extends Fragment {
         });
 
     }
+
+    protected void submitEventForTargetCity(DynamicData dynamicData,StaticData staticData,MapInfo mapData, String city){
+
+    }
+
+    protected void postDynamicDataToTargetCity(DynamicData data,String city, String sharedEventId){
+
+    }
+
+    protected void postStaticDataToTargetCity(StaticData data,String city, String sharedEventId){
+
+    }
+
+    protected void postMapDataToTargetCity(MapInfo data,String city, String sharedEventId){
+
+    }
+
 }

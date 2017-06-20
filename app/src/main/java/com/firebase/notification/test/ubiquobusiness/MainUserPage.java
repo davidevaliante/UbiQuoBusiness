@@ -173,7 +173,7 @@ public class MainUserPage extends AppCompatActivity  {
 
     private void logMeOut() {
         FirebaseAuth.getInstance().signOut();
-        finish();
+        this.finish();
     }
 
     private void initItems(boolean toShowDoubleItems) {

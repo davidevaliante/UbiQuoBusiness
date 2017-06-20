@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
 import com.google.android.gms.location.places.ui.PlacePicker;
@@ -49,8 +50,12 @@ public class NamePlaceFragment extends Fragment {
     RelativeLayout buttonLayout;
     private Geocoder mGeocoder;
 
-    private final static LatLng upperBound = new LatLng(46.191152, 9.383675);
-    private final static LatLng lowerBound = new LatLng(36.693164, 14.995949);
+    private final static LatLng upperBound = new LatLng(46.92025531537451, 5.712890625);
+    private final static LatLng lowerBound = new LatLng(39.16414104768743, 19.072265625);
+
+    private final static LatLng UpperBound = new LatLng(47.754097979680026, 17.75390625);
+    private final static LatLng LowerBound = new LatLng(35.02999636902566, 6.6796875);
+
     SupportPlaceAutocompleteFragment autocompleteFragmentCity, autocompleteFragmentAdress;
 
     int PLACE_PICKER_REQUEST = 1;
@@ -82,13 +87,16 @@ public class NamePlaceFragment extends Fragment {
         ButterKnife.bind(this, rootView);
 
         mGeocoder = new Geocoder(getActivity(), Locale.getDefault());
-
+        AutocompleteFilter filter =
+                new AutocompleteFilter.Builder().setCountry("IT").build();
 
 
         autocompleteFragmentCity = (SupportPlaceAutocompleteFragment)getChildFragmentManager().findFragmentById(R.id.place_autocomplete_city);
+        autocompleteFragmentCity.setFilter(filter);
         autocompleteFragmentCity.setHint("Cerca la città");
 
         autocompleteFragmentAdress = (SupportPlaceAutocompleteFragment)getChildFragmentManager().findFragmentById(R.id.place_autocomplete_adress);
+        autocompleteFragmentAdress.setFilter(filter);
         autocompleteFragmentAdress.setHint("Cerca l'indirizzo");
 
         loadRegisterData();
@@ -124,7 +132,8 @@ public class NamePlaceFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-                LatLngBounds bounds = new LatLngBounds(lowerBound, upperBound);
+                LatLngBounds bounds = new LatLngBounds(LowerBound, UpperBound);
+
                 builder.setLatLngBounds(bounds);
                 try {
                     startActivityForResult(builder.build(getActivity()), PLACE_PICKER_REQUEST);

@@ -98,11 +98,12 @@ public class UbiQuoBusinessUtils {
         userData = context.getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
             final String userToken = FirebaseInstanceId.getInstance().getToken();
             final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            String city = userData.getString("PLACE_CITY","NA");
 
             //solo se userToken esiste ed utente ancora loggato
             if (!userId.isEmpty() && !userToken.isEmpty()) {
                 final DatabaseReference userReference = FirebaseDatabase.getInstance().getReference().child("Businesses")
-                        .child(userId);
+                      .child(city).child(userId);
                 DatabaseReference tokenReference = FirebaseDatabase.getInstance().getReference().child("Token").child(userId).child("user_token");
 
                 //aggiorna shared preferences

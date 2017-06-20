@@ -19,6 +19,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
@@ -78,10 +79,13 @@ public class NewEventSecondPage extends Fragment {
 
         mGeocoder = new Geocoder(getActivity(), Locale.getDefault());
 
+        AutocompleteFilter filter =
+                new AutocompleteFilter.Builder().setCountry("IT").build();
+
         createEventAutoAdress = (SupportPlaceAutocompleteFragment)getChildFragmentManager().findFragmentById(R.id.createEventAutoAdress);
         createEventAutoCity = (SupportPlaceAutocompleteFragment)getChildFragmentManager().findFragmentById(R.id.createEventAutoCity);
-
-
+        createEventAutoAdress.setFilter(filter);
+        createEventAutoCity.setFilter(filter);
 
         createEventAutoCity.setHint("Cerca Città");
         createEventAutoAdress.setHint("Cerca Indirizzo");

@@ -22,6 +22,7 @@ import java.text.DateFormatSymbols;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
 /**
  * Created by akain on 09/06/2017.
@@ -162,6 +163,28 @@ public class UbiQuoBusinessUtils {
     public static String capitalize(String s) {
         if (s.length() == 0) return s;
         return s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase();
+    }
+
+    public static String fromMillisToStringDate(Long time) {
+        Date date = new Date(time);
+        SimpleDateFormat format = new SimpleDateFormat("dd/MMM");
+        String[] splittedDate = format.format(date).split("/");
+        return splittedDate[0] + " " + splittedDate[1];
+    }
+
+    public static String fromMillisToStringTime(Long time) {
+        Date date = new Date(time);
+        SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+        return format.format(date);
+    }
+
+
+    public static void printPreferences(SharedPreferences preferences){
+        Map<String, ?> allEntries = preferences.getAll();
+        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
+            Log.d("map values", entry.getKey() + ": " + entry.getValue().toString());
+        }
+
     }
 
 

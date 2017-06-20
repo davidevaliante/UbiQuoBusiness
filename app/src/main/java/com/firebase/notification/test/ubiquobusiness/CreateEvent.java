@@ -25,6 +25,7 @@ public class CreateEvent extends AppCompatActivity {
     CustomViewPager newEvenViewPager;
     private PagerAdapter adapter;
     protected Bundle proposal;
+    protected String editEventIdString;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +36,7 @@ public class CreateEvent extends AppCompatActivity {
         ButterKnife.bind(this);
 
         proposal = getIntent().getBundleExtra("proposal_bundle");
+        editEventIdString = getIntent().getStringExtra("edit_string_id");
 
         List<Fragment> createEventFragments = initializeFragments();
 
@@ -89,7 +91,10 @@ public class CreateEvent extends AppCompatActivity {
             // If the user is currently looking at the first step, allow the system to handle the
             // Back button. This calls finish() on this activity and pops the back stack.
            NewEventFirstPage firstPage = (NewEventFirstPage)getSupportFragmentManager().getFragments().get(0);
-            firstPage.saveData();
+            if(editEventIdString == null && proposal == null){
+                firstPage.saveData();
+            }
+
             super.onBackPressed();
         } else {
             // Otherwise, select the previous step.

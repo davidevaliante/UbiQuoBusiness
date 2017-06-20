@@ -30,6 +30,7 @@ import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -56,6 +57,8 @@ public class NewEventSecondPage extends Fragment {
     private Geocoder mGeocoder;
 
     protected SupportPlaceAutocompleteFragment createEventAutoAdress,createEventAutoCity;
+    private String editEventStringId;
+    private Bundle proposal;
     Unbinder unbinder;
 
     public NewEventSecondPage() {
@@ -84,6 +87,9 @@ public class NewEventSecondPage extends Fragment {
         createEventAutoAdress.setHint("Cerca Indirizzo");
 
         unbinder = ButterKnife.bind(this, rootView);
+
+        editEventStringId = ((CreateEvent)getActivity()).editEventIdString;
+        proposal = ((CreateEvent)getActivity()).proposal;
 
         createEventAutoCity.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
@@ -119,8 +125,13 @@ public class NewEventSecondPage extends Fragment {
                         Integer actualMonth = monthOfYear+1;
                         String eventDate = dayOfMonth+"/"+actualMonth+"/"+year;
                         String formattedDate = UbiQuoBusinessUtils.readableDate(eventDate);
+                        SharedPreferences edit_event = getActivity().getSharedPreferences("EDIT_EVENT",Context.MODE_PRIVATE);
                         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA",Context.MODE_PRIVATE);
-                        sharedPreferences.edit().putString("EVENT_DATE_STRING",eventDate).commit();
+                        if(editEventStringId == null) {
+                            sharedPreferences.edit().putString("EVENT_DATE_STRING", eventDate).commit();
+                        }else{
+                            edit_event.edit().putString("EDIT_DATE_STRING",eventDate).commit();
+                        }
                         createDatePicker.setText("Data\n"+formattedDate);
                     }
                 });
@@ -139,7 +150,12 @@ public class NewEventSecondPage extends Fragment {
                         String starting = UbiQuoBusinessUtils.hourFormatter(hourOfDay,minute);
                         createTimePicker.setText("Orario d'inizio\n"+starting);
                         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA",Context.MODE_PRIVATE);
-                        sharedPreferences.edit().putString("EVENT_START_TIME",starting).commit();
+                        SharedPreferences edit_event = getActivity().getSharedPreferences("EDIT_EVENT",Context.MODE_PRIVATE);
+                        if(editEventStringId == null) {
+                            sharedPreferences.edit().putString("EVENT_START_TIME", starting).commit();
+                        }else{
+                            edit_event.edit().putString("EDIT_EVENT_START_TIME",starting).commit();
+                        }
 
                     }
                 },true);
@@ -151,14 +167,24 @@ public class NewEventSecondPage extends Fragment {
         buttonLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (canGoNext()){
-                    ((CreateEvent)getActivity()).newEvenViewPager.setCurrentItem(2,true);
+                if(editEventStringId == null) {
+                    if (canGoNext()) {
+                        ((CreateEvent) getActivity()).newEvenViewPager.setCurrentItem(2, true);
+                    }
+                }else{
+                    if(canEditNext()){
+                        ((CreateEvent) getActivity()).newEvenViewPager.setCurrentItem(2, true);
+                    }
                 }
             }
         });
 
-        //carica i dati del locale nelle view corrispondenti
-        loadPlaceData();
+        if(editEventStringId == null && proposal==null) {
+            //carica i dati del locale nelle view corrispondenti
+            loadPlaceData();
+        }else{
+            loadEditPlaceData();
+        }
 
         return rootView;
     }
@@ -170,54 +196,84 @@ public class NewEventSecondPage extends Fragment {
     }
 
     private void loadPlaceData(){
-        SharedPreferences placeData = getActivity().getSharedPreferences("UBIQUO_BUSINESS", Context.MODE_PRIVATE);
-        String placeName = placeData.getString("PLACE_NAME","NA");
-        String placeCity = placeData.getString("PLACE_CITY","NA");
-        String placeAdress = placeData.getString("PLACE_ADRESS","NA");
-        String placeId = placeData.getString("PLACE_ID","NA");
-        Double placeLongitude = UbiQuoBusinessUtils.getDoubleFromEditor(placeData,"PLACE_LONGITUDE",0.0);
-        Double placeLatitude = UbiQuoBusinessUtils.getDoubleFromEditor(placeData,"PLACE_LATITUDE",0.0);
 
-        Log.d("PLACE_LAT : ",""+placeLatitude);
-        Log.d("PLACE_LONG : ",""+placeLongitude);
+            SharedPreferences placeData = getActivity().getSharedPreferences("UBIQUO_BUSINESS", Context.MODE_PRIVATE);
+            String placeName = placeData.getString("PLACE_NAME", "NA");
+            String placeCity = placeData.getString("PLACE_CITY", "NA");
+            String placeAdress = placeData.getString("PLACE_ADRESS", "NA");
+            String placeId = placeData.getString("PLACE_ID", "NA");
+            Double placeLongitude = UbiQuoBusinessUtils.getDoubleFromEditor(placeData, "PLACE_LONGITUDE", 0.0);
+            Double placeLatitude = UbiQuoBusinessUtils.getDoubleFromEditor(placeData, "PLACE_LATITUDE", 0.0);
 
-        SharedPreferences eventData = getActivity().getSharedPreferences("LAST_EVENT_DATA",Context.MODE_PRIVATE);
-        String startingTime = eventData.getString("EVENT_START_TIME","NA");
-        String eventDate = eventData.getString("EVENT_DATE_STRING","NA");
+            Log.d("PLACE_LAT : ", "" + placeLatitude);
+            Log.d("PLACE_LONG : ", "" + placeLongitude);
 
-        if(!placeName.equalsIgnoreCase("NA") && !placeName.isEmpty()){
-            eventOrganizer.setText(placeName);
-            eventData.edit().putString("EVENT_ORGANIZER",placeName).commit();
+            SharedPreferences eventData = getActivity().getSharedPreferences("LAST_EVENT_DATA", Context.MODE_PRIVATE);
+            String startingTime = eventData.getString("EVENT_START_TIME", "NA");
+            String eventDate = eventData.getString("EVENT_DATE_STRING", "NA");
+
+            if (!placeName.equalsIgnoreCase("NA") && !placeName.isEmpty()) {
+                eventOrganizer.setText(placeName);
+                eventData.edit().putString("EVENT_ORGANIZER", placeName).commit();
+            }
+
+            if (!placeCity.equalsIgnoreCase("NA") && !placeCity.isEmpty()) {
+                createEventAutoCity.setText(placeCity);
+                eventData.edit().putString("EVENT_CITY", placeCity).commit();
+
+            }
+
+            if (!placeAdress.equalsIgnoreCase("NA") && !placeAdress.isEmpty()) {
+                createEventAutoAdress.setText(placeAdress);
+                eventData.edit().putString("EVENT_ADRESS", placeAdress).commit();
+            }
+
+            if (!startingTime.equalsIgnoreCase("NA") && !startingTime.isEmpty()) {
+                createTimePicker.setText("Orario d'inizio\n" + startingTime);
+            }
+
+            if (!eventDate.equalsIgnoreCase("NA") && !eventDate.isEmpty()) {
+                createDatePicker.setText("Data evento\n" + UbiQuoBusinessUtils.readableDate(eventDate));
+            }
+
+            if (placeLatitude != 0.0 && placeLongitude != 0.0) {
+                UbiQuoBusinessUtils.putDoubleIntoEditor(eventData.edit(), "EVENT_LONGITUDE", placeLongitude).commit();
+                UbiQuoBusinessUtils.putDoubleIntoEditor(eventData.edit(), "EVENT_LATITUDE", placeLatitude).commit();
+            }
+
+            if (!placeId.equalsIgnoreCase("NA")) {
+                eventData.edit().putString("EVENT_ORGANIZER_ID", placeId).commit();
+            }
+
+
+    }
+
+    private Boolean canEditNext(){
+        Boolean canEditNext = true;
+        SharedPreferences editPreferences = getActivity().getSharedPreferences("EDIT_EVENT",Context.MODE_PRIVATE);
+        String date_string = editPreferences.getString("EDIT_DATE_STRING","NA");
+        String time_string = editPreferences.getString("EDIT_EVENT_START_TIME","NA");
+        String city = editPreferences.getString("EDIT_CITY","NA");
+        String adress = editPreferences.getString("EDIT_ADRESS","NA");
+
+        if(date_string.equalsIgnoreCase("NA") || time_string.equalsIgnoreCase("NA") || city.equalsIgnoreCase("NA") && !adress.equalsIgnoreCase("NA")){
+            Toasty.error(getActivity(),"Campi mancanti",Toast.LENGTH_SHORT,true).show();
+            return false;
         }
 
-        if(!placeCity.equalsIgnoreCase("NA") && !placeCity.isEmpty()){
-            createEventAutoCity.setText(placeCity);
-            eventData.edit().putString("EVENT_CITY",placeCity).commit();
-
+        if(date_string.equalsIgnoreCase("NA") || time_string.equalsIgnoreCase("NA")){
+            return false;
+        }else{
+            editPreferences.edit().putLong("EDIT_DATE",UbiQuoBusinessUtils.getTimeMillis(date_string,time_string)).commit();
         }
 
-        if(!placeAdress.equalsIgnoreCase("NA") && !placeAdress.isEmpty()){
-            createEventAutoAdress.setText(placeAdress);
-            eventData.edit().putString("EVENT_ADRESS",placeAdress).commit();
+        Map<String, ?> allEntries = editPreferences.getAll();
+        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
+            Log.d("map values", entry.getKey() + ": " + entry.getValue().toString());
         }
 
-        if(!startingTime.equalsIgnoreCase("NA") && !startingTime.isEmpty()){
-            createTimePicker.setText("Orario d'inizio\n"+startingTime);
-        }
 
-        if(!eventDate.equalsIgnoreCase("NA") && !eventDate.isEmpty()){
-            createDatePicker.setText("Data evento\n"+UbiQuoBusinessUtils.readableDate(eventDate));
-        }
-
-        if(placeLatitude!=0.0 && placeLongitude!=0.0){
-            UbiQuoBusinessUtils.putDoubleIntoEditor(eventData.edit(),"EVENT_LONGITUDE",placeLongitude).commit();
-            UbiQuoBusinessUtils.putDoubleIntoEditor(eventData.edit(),"EVENT_LATITUDE",placeLatitude).commit();
-        }
-
-        if(!placeId.equalsIgnoreCase("NA")){
-            eventData.edit().putString("EVENT_ORGANIZER_ID",placeId).commit();
-        }
-
+        return canEditNext;
     }
 
     private Boolean canGoNext(){
@@ -294,23 +350,34 @@ public class NewEventSecondPage extends Fragment {
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
+        SharedPreferences edit_event = getActivity().getSharedPreferences("EDIT_EVENT",Context.MODE_PRIVATE);
+
         try {
             String cityName = getCityNameByCoordinates(latitude, longitude);
             createEventAutoCity.setText(cityName);
-            editor.putString("EVENT_CITY", cityName);
+
+            //switcher editmode/non editmode
+            if(editEventStringId == null) {
+                editor.putString("EVENT_CITY", cityName).commit();
+            }else{
+                edit_event.edit().putString("EDIT_CITY",cityName);
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "EVENT_LATITUDE", latitude).commit();
-        UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "EVENT_LONGITUDE", longitude).commit();
+        if(editEventStringId == null) {
+            UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "EVENT_LATITUDE", latitude).commit();
+            UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "EVENT_LONGITUDE", longitude).commit();
+        }else{
+            UbiQuoBusinessUtils.putDoubleIntoEditor(edit_event.edit(), "EDIT_LAT", latitude).commit();
+            UbiQuoBusinessUtils.putDoubleIntoEditor(edit_event.edit(), "EDIT_LNG", longitude).commit();
+        }
         LatLng upper = new LatLng(latitude, longitude);
         LatLng lower = new LatLng(latitude, longitude);
         LatLngBounds latlngBounds = new LatLngBounds(upper, lower);
         createEventAutoAdress.setBoundsBias(latlngBounds);
 
-        editor.commit();
     }
 
     private void adressMapHandler(Place someAdress) {
@@ -322,20 +389,32 @@ public class NewEventSecondPage extends Fragment {
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
+        SharedPreferences edit_event = getActivity().getSharedPreferences("EDIT_EVENT",Context.MODE_PRIVATE);
+
+
         createEventAutoAdress.setText(targetAdress);
         try {
             String cityName = getCityNameByCoordinates(latitude, longitude);
             createEventAutoAdress.setText(cityName);
-            editor.putString("EVENT_CITY", cityName);
+            if(editEventStringId == null) {
+                editor.putString("EVENT_CITY", cityName).commit();
+            }else{
+                edit_event.edit().putString("EDIT_CITY",cityName).commit();
+            }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-        editor.putString("EVENT_ADRESS", targetAdress);
-        UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "EVENT_LATITUDE", latitude).commit();
-        UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "EVENT_LONGITUDE", longitude).commit();
+        if(editEventStringId == null) {
+            editor.putString("EVENT_ADRESS", targetAdress);
+            UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "EVENT_LATITUDE", latitude).commit();
+            UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "EVENT_LONGITUDE", longitude).commit();
+        }else{
+            edit_event.edit().putString("EDIT_ADRESS",targetAdress).commit();
+            UbiQuoBusinessUtils.putDoubleIntoEditor(edit_event.edit(), "EDIT_LAT", latitude).commit();
+            UbiQuoBusinessUtils.putDoubleIntoEditor(edit_event.edit(), "EDIT_LNG", longitude).commit();
+        }
 
-        editor.commit();
     }
 
     private String getCityNameByCoordinates(double lat, double lon) throws IOException {
@@ -345,6 +424,34 @@ public class NewEventSecondPage extends Fragment {
             return addresses.get(0).getLocality();
         }
         return null;
+    }
+
+    private void loadEditPlaceData(){
+        SharedPreferences editPref = getActivity().getSharedPreferences("EDIT_EVENT",Context.MODE_PRIVATE);
+        Long time = editPref.getLong("EDIT_DATE",0);
+        Double lat = UbiQuoBusinessUtils.getDoubleFromEditor(editPref,"EDIT_LAT",0.0);
+        Double lng = UbiQuoBusinessUtils.getDoubleFromEditor(editPref,"EDIT_LNG",0.0);
+        String adress = editPref.getString("EDIT_ADRESS","NA");
+        String city = editPref.getString("EDIT_CITY","NA");
+        String organizer = editPref.getString("EDIT_ORGANIZER","NA");
+
+        if(time != 0){
+            createDatePicker.setText("Data evento\n"+UbiQuoBusinessUtils.fromMillisToStringDate(time));
+            createTimePicker.setText("Orario d'inizio\n"+UbiQuoBusinessUtils.fromMillisToStringTime(time));
+        }
+
+        if(!city.equalsIgnoreCase("NA")){
+            createEventAutoCity.setHint(city);
+        }
+
+        if(!adress.equalsIgnoreCase("NA")){
+            createEventAutoAdress.setHint(adress);
+        }
+
+        if(!organizer.equalsIgnoreCase("NA")){
+            eventOrganizer.setText(organizer);
+        }
+
     }
 
 

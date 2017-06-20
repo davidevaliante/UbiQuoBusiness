@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.firebase.notification.test.ubiquobusiness">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -18,6 +19,9 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/API_KEY" />
+        <meta-data
+            android:name="com.bumptech.glide.integration.okhttp.OkHttpGlideModule"
+            tools:node="remove" />
 
         <activity
             android:name=".MainActivity"
@@ -39,11 +43,14 @@
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Base.Theme.AppCompat" />
-        <activity android:name=".CreateEvent"
-            android:screenOrientation="portrait"></activity>
-
-        <activity android:name=".CreateProposal"
-            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".CreateEvent"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".CreateProposal"
+            android:screenOrientation="portrait" />
+        <activity android:name=".EventPage" />
+        <activity android:name=".EditEvent"></activity>
     </application>
 
 </manifest>

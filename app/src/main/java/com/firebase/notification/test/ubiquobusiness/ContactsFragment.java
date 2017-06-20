@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
@@ -57,6 +58,8 @@ public class ContactsFragment extends Fragment {
     Unbinder unbinder;
 
     private ProgressDialog myProgressBar;
+    private String editString;
+    private Bundle proposal;
 
     public ContactsFragment() {
         // Required empty public constructor
@@ -74,14 +77,28 @@ public class ContactsFragment extends Fragment {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_contacts, container, false);
         unbinder = ButterKnife.bind(this, rootView);
 
+        editString = ((CreateEvent)getActivity()).editEventIdString;
+        proposal = ((CreateEvent)getActivity()).proposal;
+
         confirmLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (canSubmit()) {
-                    submitEvent();
+                if (editString == null){
+                    if (canSubmit()) {
+                        submitEvent();
+                    }
+                }else{
+                    if(canEdit()){
+                        editEvent();
+                    }
                 }
             }
         });
+
+        if(editString != null){
+            loadContacts();
+        }
+
         return rootView;
     }
 
@@ -157,6 +174,7 @@ public class ContactsFragment extends Fragment {
 
         SharedPreferences userPref = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
         final String phone = userPref.getString("PLACE_PHONE","NA");
+        final String place_id = userPref.getString("PLACE_ID","NA");
 
 
         //caricamento immagine
@@ -174,6 +192,7 @@ public class ContactsFragment extends Fragment {
             public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
                 if(task.isComplete() && task.isSuccessful()){
 
+                    //non creato a partire da una proposta
                     if(bundle == null) {
                         //dati dinamici
                         String downloadUrl = task.getResult().getDownloadUrl().toString();
@@ -212,6 +231,8 @@ public class ContactsFragment extends Fragment {
                         DatabaseReference mapReference = FirebaseDatabase.getInstance().getReference().child("MapData").child(city).child(pushId);
                         mapReference.setValue(newMapInfo);
 
+                        FirebaseDatabase.getInstance().getReference().child("BusinessesEvents").child(city).child(place_id).child(pushId).setValue(true);
+
                         Toasty.success(getActivity(), "Evento aggiunto con successo !", Toast.LENGTH_SHORT, true).show();
                         getActivity().getSharedPreferences("LAST_EVENT_DATA", 0).edit().clear().commit();
                         myProgressBar.dismiss();
@@ -219,6 +240,8 @@ public class ContactsFragment extends Fragment {
 
 
                     }else{
+
+                        //creato a partire da una proposta
                         final String proposalId = bundle.getString("id", "NA");
                         //dati dinamici
                         String downloadUrl = task.getResult().getDownloadUrl().toString();
@@ -258,9 +281,13 @@ public class ContactsFragment extends Fragment {
                         DatabaseReference mapReference = FirebaseDatabase.getInstance().getReference().child("MapData").child(city).child(pushId);
                         mapReference.setValue(newMapInfo);
 
+                        FirebaseDatabase.getInstance().getReference().child("BusinessesEvents").child(city).child(place_id).child(pushId).setValue(true);
+
+
                         Toasty.success(getActivity(), "Evento aggiunto con successo !", Toast.LENGTH_SHORT, true).show();
                         getActivity().getSharedPreferences("LAST_EVENT_DATA", 0).edit().clear().commit();
-                        FirebaseDatabase.getInstance().getReference().child("NotificationForProposal").child(city).child(proposalId).setValue(true);
+                        ProposalBuiltPush pushNotification = new ProposalBuiltPush(proposalId, FirebaseAuth.getInstance().getCurrentUser().getUid(),organizer);
+                        FirebaseDatabase.getInstance().getReference().child("NotificationForProposal").child(city).child(proposalId).setValue(pushNotification);
                         myProgressBar.dismiss();
                         getActivity().finish();
                     }
@@ -273,20 +300,127 @@ public class ContactsFragment extends Fragment {
 
     }
 
-    protected void submitEventForTargetCity(DynamicData dynamicData,StaticData staticData,MapInfo mapData, String city){
+    private void editEvent(){
+        String event_key = editString;
+        if(!event_key.isEmpty()){
+            SharedPreferences editPreferences = getActivity().getSharedPreferences("EDIT_EVENT",Context.MODE_PRIVATE);
+            String city = editPreferences.getString("EDIT_CITY","NA");
+            DatabaseReference dynamicReference = FirebaseDatabase.getInstance().getReference().child("Events").child("Dynamic").child(city).child(event_key);
 
+            //Dati dinamici
+            Long date = editPreferences.getLong("EDIT_DATE",0);
+            Float price = editPreferences.getFloat("EDIT_PRICE",0.0f);
+            String title = editPreferences.getString("EDIT_TITLE","NA");
+            String image = editPreferences.getString("EDIT_IMAGE","NA");
+            String placeName = editPreferences.getString("EDIT_ORGANIZER","NA");
+            Boolean isFree = editPreferences.getBoolean("EDIT_ISFREE",true);
+            DynamicData newDynamicData = new DynamicData(0,0,0,0,0,0,date,price,title,image,placeName,isFree,0);
+            dynamicReference.setValue(newDynamicData).addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    Toasty.success(getActivity(),"Success !",Toast.LENGTH_SHORT,true).show();
+                }
+            });
+
+            //dati statici
+            DatabaseReference staticReference = FirebaseDatabase.getInstance().getReference().child("Events").child("Static").child(city).child(event_key);
+            ArrayList<String> names = new ArrayList<>();
+            ArrayList<String> numbers = new ArrayList<>();
+            String desc = editPreferences.getString("EDIT_DESC","NA");
+
+            String name_one = editPreferences.getString("EDIT_CONTACT_1","NA");
+            String number_one = editPreferences.getString("EDIT_NUMBER_1","NA");
+
+            //switchati perchè nel layout il secondo viene prima
+            if(!name_one.equalsIgnoreCase("NA") && !number_one.equalsIgnoreCase("NA")){
+                names.add(name_one);
+                numbers.add(number_one);
+            }
+
+            String name_two = editPreferences.getString("EDIT_CONTACT_2","NA");
+            String number_two = editPreferences.getString("EDIT_NUMBER_2","NA");
+            if(!name_two.equalsIgnoreCase("NA") && !number_two.equalsIgnoreCase("NA")){
+                names.add(name_two);
+                numbers.add(number_two);
+            }
+
+            String name_three = editPreferences.getString("EDIT_CONTACT_3","NA");
+            String number_three = editPreferences.getString("EDIT_NUMBER_3","NA");
+            if(!name_three.equalsIgnoreCase("NA") && !number_three.equalsIgnoreCase("NA")){
+                names.add(name_three);
+                numbers.add(number_three);
+            }
+
+            StaticData newStaticData = new StaticData(desc,names,numbers);
+            staticReference.setValue(newStaticData);
+
+            //dati mappa
+            DatabaseReference mapReference = FirebaseDatabase.getInstance().getReference().child("MapData").child(city).child(event_key);
+
+            Double lat = UbiQuoBusinessUtils.getDoubleFromEditor(editPreferences,"EDIT_LAT",0.0);
+            Double lng = UbiQuoBusinessUtils.getDoubleFromEditor(editPreferences,"EDIT_LNG",0.0);
+            String organizer_id = editPreferences.getString("EDIT_ORGANIZER_ID","NA");
+            String phone = editPreferences.getString("EDIT_NUMBER_0","Non disponibile");
+            String adress = editPreferences.getString("EDIT_ADRESS","Non disponibile");
+            MapInfo newMapInfo = new MapInfo(lat,lng,placeName,organizer_id,title,price,phone,0,date,adress,event_key);
+            mapReference.setValue(newMapInfo);
+
+        }else{
+            Toasty.error(getActivity(),"Errore del server, riprova", Toast.LENGTH_SHORT,true).show();
+        }
     }
 
-    protected void postDynamicDataToTargetCity(DynamicData data,String city, String sharedEventId){
+    private Boolean canEdit(){
+        Boolean canEdit = true;
+        SharedPreferences editor = getActivity().getSharedPreferences("EDIT_EVENT",Context.MODE_PRIVATE);
+        String name_one = secondContactName.getText().toString().trim();
+        String name_two = firstContactName.getText().toString().trim();
+        String name_three = thirdContactName.getText().toString().trim();
+        String number_one = secondContactNumber.getText().toString().trim();
+        String number_two = firstContactNumber.getText().toString().trim();
+        String number_three = thirdContactNumber.getText().toString().trim();
 
+        if(!name_one.isEmpty() && !number_one.isEmpty()){
+            editor.edit().putString("EDIT_CONTACT_1",name_one).commit();
+            editor.edit().putString("EDIT_NUMBER_1",number_one).commit();
+        }
+
+        if(!name_two.isEmpty() && !number_two.isEmpty()){
+            editor.edit().putString("EDIT_CONTACT_2",name_two).commit();
+            editor.edit().putString("EDIT_NUMBER_2",number_two).commit();
+        }
+
+        if(!name_three.isEmpty() && !name_three.isEmpty()){
+            editor.edit().putString("EDIT_CONTACT_3",name_three).commit();
+            editor.edit().putString("EDIT_NUMBER_3",number_three).commit();
+        }
+
+        return canEdit;
     }
 
-    protected void postStaticDataToTargetCity(StaticData data,String city, String sharedEventId){
+    private void loadContacts(){
+        SharedPreferences editor = getActivity().getSharedPreferences("EDIT_EVENT",Context.MODE_PRIVATE);
+        String name_one = editor.getString("EDIT_CONTACT_1","NA");
+        String number_one = editor.getString("EDIT_NUMBER_1","NA");
 
+        //switchati perchè nel layout il secondo viene prima
+        if(!name_one.equalsIgnoreCase("NA") && !number_one.equalsIgnoreCase("NA")){
+            secondContactName.setText(name_one);
+            secondContactNumber.setText(number_one);
+        }
+
+        String name_two = editor.getString("EDIT_CONTACT_2","NA");
+        String number_two = editor.getString("EDIT_NUMBER_2","NA");
+        if(!name_two.equalsIgnoreCase("NA") && !number_two.equalsIgnoreCase("NA")){
+            firstContactName.setText(name_two);
+            firstContactNumber.setText(number_two);
+        }
+
+        String name_three = editor.getString("EDIT_CONTACT_3","NA");
+        String number_three = editor.getString("EDIT_NUMBER_3","NA");
+        if(!name_three.equalsIgnoreCase("NA") && !number_three.equalsIgnoreCase("NA")){
+            thirdContactName.setText(name_three);
+            thirdContactNumber.setText(number_three);
+        }
     }
-
-    protected void postMapDataToTargetCity(MapInfo data,String city, String sharedEventId){
-
-    }
-
 }

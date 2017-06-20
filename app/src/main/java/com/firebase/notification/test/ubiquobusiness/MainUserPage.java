@@ -3,8 +3,10 @@ package com.firebase.notification.test.ubiquobusiness;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -16,8 +18,9 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.hlab.fabrevealmenu.enums.Direction;
@@ -30,18 +33,22 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
+import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
 
-public class MainUserPage extends AppCompatActivity {
+public class MainUserPage extends AppCompatActivity  {
 
 
     @BindView(R.id.mainUserPageViewPager)
     ViewPager viewPager;
     @BindView(R.id.my_tb)
     Toolbar myTb;
+    @BindView(R.id.tabLayout)
+    TabLayout tabLayout;
 
 
     private FirebaseAuth mAuth;
     private PagerAdapter pagerAdapter;
+    private TabLayout.OnTabSelectedListener tabSelectedListener;
 
     private ArrayList<FABMenuItem> items;
     private String[] mDirectionStrings = {"Direction - LEFT", "Direction - UP"};
@@ -54,9 +61,13 @@ public class MainUserPage extends AppCompatActivity {
         setContentView(R.layout.activity_main_user_page);
         ButterKnife.bind(this);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
-        Toolbar toolbar = (Toolbar)findViewById(R.id.my_tb);
 
-        toolbar.setTitleTextColor(ContextCompat.getColor(this,R.color.pureWhite));
+        final Typeface tf = Typeface.createFromAsset(MainUserPage.this.getAssets(), "fonts/Hero.otf");
+
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.my_tb);
+
+        toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.pureWhite));
         setSupportActionBar(toolbar);
         getSupportActionBar().setHomeAsUpIndicator(ContextCompat.getDrawable(this, R.drawable.vector_burger_menu_24));
 
@@ -65,6 +76,36 @@ public class MainUserPage extends AppCompatActivity {
         List<Fragment> userPageFragments = initializeFragments();
         pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(), userPageFragments);
         viewPager.setAdapter(pagerAdapter);
+        tabLayout.setTabTextColors(ContextCompat.getColor(this,R.color.pureWhite),ContextCompat.getColor(this,R.color.pureWhite));
+
+        tabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(this,R.color.colorAccent));
+        tabLayout.setupWithViewPager(viewPager);
+
+
+        //per cambiare il font nel tablayout
+        ViewGroup vg = (ViewGroup) tabLayout.getChildAt(0);
+        changeFontInViewGroup(vg,"fonts/Hero.otf");
+
+        tabSelectedListener = new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+
+
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        } ;
+        tabLayout.addOnTabSelectedListener(tabSelectedListener);
+
+        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
 
         //token refresher
@@ -80,8 +121,12 @@ public class MainUserPage extends AppCompatActivity {
     }
 
 
+
+
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
         List<Fragment> registrationFragments;
+        // tab titles
+        private String[] tabTitles = new String[]{"Proposte", "Eventi", "Altro"};
 
         public ScreenSlidePagerAdapter(FragmentManager fm, List<Fragment> registrationFragments) {
             super(fm);
@@ -98,7 +143,10 @@ public class MainUserPage extends AppCompatActivity {
             return this.registrationFragments.size();
         }
 
-
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return tabTitles[position];
+        }
     }
 
     @Override
@@ -115,6 +163,8 @@ public class MainUserPage extends AppCompatActivity {
 
     private List<Fragment> initializeFragments() {
         List<Fragment> fList = new ArrayList<Fragment>();
+        fList.add(ProposalsFragement.newInstance());
+        fList.add(EventFragment.newInstance());
         fList.add(ProposalsFragement.newInstance());
 
 
@@ -153,9 +203,28 @@ public class MainUserPage extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if(item.getItemId()==R.id.logout){
+        if (item.getItemId() == R.id.logout) {
             logMeOut();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        tabLayout.removeOnTabSelectedListener(tabSelectedListener);
+    }
+
+    //per cambiare il font nella toolBar
+    void changeFontInViewGroup(ViewGroup viewGroup, String fontPath) {
+        for (int i = 0; i < viewGroup.getChildCount(); i++) {
+            View child = viewGroup.getChildAt(i);
+            if (TextView.class.isAssignableFrom(child.getClass())) {
+
+                CalligraphyUtils.applyFontToTextView(child.getContext(), (TextView) child, fontPath);
+            } else if (ViewGroup.class.isAssignableFrom(child.getClass())) {
+                changeFontInViewGroup((ViewGroup) viewGroup.getChildAt(i), fontPath);
+            }
+        }
     }
 }

@@ -202,7 +202,7 @@ public class ArgumentsImageFragment extends Fragment {
                         String imagePath = taskSnapshot.getDownloadUrl().toString();
                         String id = FirebaseAuth.getInstance().getCurrentUser().getUid();
                         Business newBusiness = new Business(placeId,"NA","NA",placeName,placeAdress,placePhone,placeCity,latitude,longitude,0,0,openingTime,closingTime,imagePath,"NA","no_token",iscrizione);
-                        businessRef.child(id).setValue(newBusiness);
+                        businessRef.child(placeCity).child(id).setValue(newBusiness);
                     }
                 });
 

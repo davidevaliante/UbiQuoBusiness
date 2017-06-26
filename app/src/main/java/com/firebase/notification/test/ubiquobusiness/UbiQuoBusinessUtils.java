@@ -1,6 +1,7 @@
 package com.firebase.notification.test.ubiquobusiness;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -91,37 +92,52 @@ public class UbiQuoBusinessUtils {
 
     }
 
-    public static void refreshCurrentUserToken(Context context){
+    public static void refreshCurrentUserToken(Context context, String userCity){
 
         //se l'auth non è null
         if(FirebaseAuth.getInstance().getCurrentUser() != null) {
         userData = context.getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
             final String userToken = FirebaseInstanceId.getInstance().getToken();
             final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            String city = userData.getString("PLACE_CITY","NA");
+
 
             //solo se userToken esiste ed utente ancora loggato
             if (!userId.isEmpty() && !userToken.isEmpty()) {
-                final DatabaseReference userReference = FirebaseDatabase.getInstance().getReference().child("Businesses")
-                      .child(city).child(userId);
+                final DatabaseReference userCityReference = FirebaseDatabase.getInstance().getReference().child("Businesses-City")
+                      .child(userCity).child(userId);
                 DatabaseReference tokenReference = FirebaseDatabase.getInstance().getReference().child("Token").child(userId).child("user_token");
-
+                final DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("Businesses").child(userId);
                 //aggiorna shared preferences
                 userData.edit().putString("USER_TOKEN", userToken).commit();
                 //aggiorna nodo del database
                 tokenReference.setValue(userToken);
 
                 //aggiorna token nel profilo utente
-                userReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                userCityReference.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         Business user = dataSnapshot.getValue(Business.class);
                         user.setToken(userToken);
-                        userReference.setValue(user);
+                        userCityReference.setValue(user);
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+                userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        Business user = dataSnapshot.getValue(Business.class);
+                        user.setToken(userToken);
+                        userRef.setValue(user);
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
 
                     }
                 });
@@ -188,6 +204,11 @@ public class UbiQuoBusinessUtils {
 
     }
 
+    public static ProgressDialog defaultProgressBar(String message, Context ctx){
+        ProgressDialog newProgressBar = new ProgressDialog(ctx,android.R.style.Theme_DeviceDefault_Light_Dialog_Alert);
+        newProgressBar.setMessage(message);
+        return newProgressBar;
+    }
 
 
 

@@ -39,6 +39,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/linearLayout">
 
                 <EditText
+
                     android:id="@+id/placeName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -46,7 +47,7 @@
                     android:drawablePadding="16dp"
                     android:hint="@string/string_place_name"
                     android:imeOptions="actionNext"
-                    android:inputType="text"
+                    android:inputType="text|textCapSentences"
                     android:padding="18dp"
                     android:textColor="@color/light_grey" />
 

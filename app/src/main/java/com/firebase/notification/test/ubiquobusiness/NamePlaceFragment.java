@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.identity.intents.model.CountrySpecification;
 import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
@@ -32,6 +33,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -49,12 +52,14 @@ public class NamePlaceFragment extends Fragment {
     @BindView(R.id.buttonLayout)
     RelativeLayout buttonLayout;
     private Geocoder mGeocoder;
+    private String pickedCity;
 
     private final static LatLng upperBound = new LatLng(46.92025531537451, 5.712890625);
     private final static LatLng lowerBound = new LatLng(39.16414104768743, 19.072265625);
 
     private final static LatLng UpperBound = new LatLng(47.754097979680026, 17.75390625);
     private final static LatLng LowerBound = new LatLng(35.02999636902566, 6.6796875);
+
 
     SupportPlaceAutocompleteFragment autocompleteFragmentCity, autocompleteFragmentAdress;
 
@@ -87,16 +92,18 @@ public class NamePlaceFragment extends Fragment {
         ButterKnife.bind(this, rootView);
 
         mGeocoder = new Geocoder(getActivity(), Locale.getDefault());
-        AutocompleteFilter filter =
-                new AutocompleteFilter.Builder().setCountry("IT").build();
+        AutocompleteFilter filter_only_italy_cities =
+                new AutocompleteFilter.Builder().setCountry("IT").setTypeFilter(AutocompleteFilter.TYPE_FILTER_CITIES).build();
+
+        AutocompleteFilter filter_only_adress = new AutocompleteFilter.Builder().setCountry("IT").setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS).build();
 
 
         autocompleteFragmentCity = (SupportPlaceAutocompleteFragment)getChildFragmentManager().findFragmentById(R.id.place_autocomplete_city);
-        autocompleteFragmentCity.setFilter(filter);
+        autocompleteFragmentCity.setFilter(filter_only_italy_cities);
         autocompleteFragmentCity.setHint("Cerca la città");
 
         autocompleteFragmentAdress = (SupportPlaceAutocompleteFragment)getChildFragmentManager().findFragmentById(R.id.place_autocomplete_adress);
-        autocompleteFragmentAdress.setFilter(filter);
+        autocompleteFragmentAdress.setFilter(filter_only_adress);
         autocompleteFragmentAdress.setHint("Cerca l'indirizzo");
 
         loadRegisterData();
@@ -107,8 +114,11 @@ public class NamePlaceFragment extends Fragment {
         autocompleteFragmentCity.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
+                //resistuisce il nome dalle coordinate e lo scrive nelle shared preferences
                 cityMapHandler(place);
-            }
+                //se la città è stata gia selezionata allora restringe gli indirizzi alla città
+                AutocompleteFilter filter_only_italy_cities =
+                        new AutocompleteFilter.Builder().setCountry("IT").setTypeFilter(AutocompleteFilter.TYPE_FILTER_CITIES).build();            }
 
             @Override
             public void onError(Status status) {
@@ -189,6 +199,8 @@ public class NamePlaceFragment extends Fragment {
         if (mName.equalsIgnoreCase("NO_NAME_INSERT_BY_USER") || mName.isEmpty()) {
             Toasty.error(getActivity(), "Riempi tutti i campi per continuare", Toast.LENGTH_SHORT, true).show();
             return false;
+        }else{
+            sharedPreferences.edit().putString("PLACE_NAME",mName).apply();
         }
         if (city.equalsIgnoreCase("NO_CITY_INSERT_BY_USER") || city.isEmpty()) {
             Toasty.error(getActivity(), "Riempi tutti i campi per continuare", Toast.LENGTH_SHORT, true).show();
@@ -262,7 +274,13 @@ public class NamePlaceFragment extends Fragment {
             String cityName = getCityNameByCoordinates(latitude, longitude);
             autocompleteFragmentCity.setText(cityName);
             editor.putString("PLACE_CITY", cityName);
-
+            String cityId = target_place.getId().toString();
+            editor.putString("PLACE_CITY_ID",cityId);
+            Double cityLat = target_place.getLatLng().latitude;
+            UbiQuoBusinessUtils.putDoubleIntoEditor(editor,"PLACE_CITY_LAT",cityLat);
+            Double cityLng = target_place.getLatLng().longitude;
+            UbiQuoBusinessUtils.putDoubleIntoEditor(editor,"PLACE_CITY_LNG",cityLng);
+            pickedCity = cityName;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -274,7 +292,8 @@ public class NamePlaceFragment extends Fragment {
         LatLngBounds latlngBounds = new LatLngBounds(upper, lower);
         autocompleteFragmentAdress.setBoundsBias(latlngBounds);
 
-        editor.commit();
+
+        editor.apply();
     }
 
     private void adressMapHandler(Place someAdress) {
@@ -301,7 +320,7 @@ public class NamePlaceFragment extends Fragment {
         UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "PLACE_LATITUDE", latitude);
         UbiQuoBusinessUtils.putDoubleIntoEditor(editor, "PLACE_LONGITUDE", longitude);
 
-        editor.commit();
+        editor.apply();
     }
 
     private void loadRegisterData(){
@@ -330,4 +349,6 @@ public class NamePlaceFragment extends Fragment {
         super.onDestroyView();
 
     }
+
+
 }

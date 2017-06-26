@@ -23,6 +23,11 @@ import android.view.WindowManager;
 import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.hlab.fabrevealmenu.enums.Direction;
 import com.hlab.fabrevealmenu.model.FABMenuItem;
 import com.hlab.fabrevealmenu.view.FABRevealMenu;
@@ -53,6 +58,7 @@ public class MainUserPage extends AppCompatActivity  {
     private ArrayList<FABMenuItem> items;
     private String[] mDirectionStrings = {"Direction - LEFT", "Direction - UP"};
     private Direction currentDirection = Direction.LEFT;
+    protected  String place_city;
 
 
     @Override
@@ -62,8 +68,11 @@ public class MainUserPage extends AppCompatActivity  {
         ButterKnife.bind(this);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
-        final Typeface tf = Typeface.createFromAsset(MainUserPage.this.getAssets(), "fonts/Hero.otf");
 
+       /* FirebaseAuth.getInstance().signOut();
+        finish();*/
+        final Typeface tf = Typeface.createFromAsset(MainUserPage.this.getAssets(), "fonts/Hero.otf");
+        //loadUserDataIntoPreferences(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_tb);
 
@@ -108,15 +117,15 @@ public class MainUserPage extends AppCompatActivity  {
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
 
-        //token refresher
+        /*//token refresher
         final Handler firebaseTokenHandler = new Handler();
         firebaseTokenHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 //refresha il token
-                UbiQuoBusinessUtils.refreshCurrentUserToken(getApplication());
+                UbiQuoBusinessUtils.refreshCurrentUserToken(getApplication(),place_city);
             }
-        }, 5000);
+        }, 5000);*/
 
     }
 
@@ -226,5 +235,21 @@ public class MainUserPage extends AppCompatActivity  {
                 changeFontInViewGroup((ViewGroup) viewGroup.getChildAt(i), fontPath);
             }
         }
+    }
+
+    private void loadUserDataIntoPreferences(String userId){
+        DatabaseReference businessRef = FirebaseDatabase.getInstance().getReference().child("Businesses").child(userId);
+        businessRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Business business = dataSnapshot.getValue(Business.class);
+                place_city = business.getCity();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 }

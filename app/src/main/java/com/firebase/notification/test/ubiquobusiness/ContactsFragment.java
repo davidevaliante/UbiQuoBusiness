@@ -27,6 +27,8 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -60,6 +62,8 @@ public class ContactsFragment extends Fragment {
     private ProgressDialog myProgressBar;
     private String editString;
     private Bundle proposal;
+    public static Map<String,String> provinces = new HashMap<>();
+
 
     public ContactsFragment() {
         // Required empty public constructor
@@ -79,6 +83,9 @@ public class ContactsFragment extends Fragment {
 
         editString = ((CreateEvent)getActivity()).editEventIdString;
         proposal = ((CreateEvent)getActivity()).proposal;
+
+        //prepara Map delle province
+        initProvinces();
 
         confirmLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -423,4 +430,119 @@ public class ContactsFragment extends Fragment {
             thirdContactNumber.setText(number_three);
         }
     }
-}
+
+    private void initProvinces() {
+        provinces.put("AG", "Agrigento");
+        provinces.put("AL", "Alessandria");
+        provinces.put("AN", "Ancona");
+        provinces.put("AO", "Aosta");
+        provinces.put("AR", "Arezzo");
+        provinces.put("AP", "Ascoli Piceno");
+        provinces.put("AT", "Asti");
+        provinces.put("AG", "Agrigento");
+        provinces.put("AV", "Avellino");
+        provinces.put("BA", "Bari");
+        provinces.put("BT", "Barletta-Andria-Trani");
+        provinces.put("BL", "Belluno");
+        provinces.put("BN", "Benevento");
+        provinces.put("BG", "Bergamo");
+        provinces.put("BI", "Biella");
+        provinces.put("BO", "Bologna");
+        provinces.put("BZ", "Bolzano");
+        provinces.put("BS", "Brescia");
+        provinces.put("BR", "Brindisi");
+        provinces.put("CA", "Cagliari");
+        provinces.put("CL", "Caltanissetta");
+        provinces.put("CB", "Campobasso");
+        provinces.put("CI", "Carbonia-Iglesias");
+        provinces.put("CE", "Caserta");
+        provinces.put("CT", "Catania");
+        provinces.put("CZ", "Catanzaro");
+        provinces.put("CH", "Chieti");
+        provinces.put("CO", "Como");
+        provinces.put("CS", "Cosenza");
+        provinces.put("CR", "Cremona");
+        provinces.put("KR", "Crotone");
+        provinces.put("CN", "Cuneo");
+        provinces.put("EN", "Enna");
+        provinces.put("FM", "Fermo");
+        provinces.put("FE", "Ferrara");
+        provinces.put("FI", "Firenze");
+        provinces.put("FG", "Foggia");
+        provinces.put("FC", "Forlì-Cesena");
+        provinces.put("FR", "Frosinone");
+        provinces.put("GE", "Genova");
+        provinces.put("GO", "Gorizia");
+        provinces.put("GR", "Grosseto");
+        provinces.put("IM", "Imperia");
+        provinces.put("IS", "Isernia");
+        provinces.put("SP", "La Spezia");
+        provinces.put("AQ", "L'Aquila");
+        provinces.put("LT", "Latina");
+        provinces.put("LE", "Lecce");
+        provinces.put("LC", "Lecco");
+        provinces.put("LI", "Livorno");
+        provinces.put("LO", "Lodi");
+        provinces.put("LU", "Lucca");
+        provinces.put("MC", "Macerata");
+        provinces.put("MN", "Mantova");
+        provinces.put("MS", "Massa Carrara");
+        provinces.put("MT", "Matera");
+        provinces.put("VS", "Medio Campidano");
+        provinces.put("ME", "Messina");
+        provinces.put("MI", "Milano");
+        provinces.put("MO", "Modena");
+        provinces.put("MB", "Monza e Brianza");
+        provinces.put("NA", "Napoli");
+        provinces.put("NO", "Novara");
+        provinces.put("NU", "Nuoro");
+        provinces.put("OG", "Ogliastra");
+        provinces.put("OT", "Olbia-Tempio");
+        provinces.put("OR", "Oristano");
+        provinces.put("PD", "Padova");
+        provinces.put("PA", "Palermo");
+        provinces.put("PR", "Parma");
+        provinces.put("PV", "Pavia");
+        provinces.put("PG", "Perugia");
+        provinces.put("PU", "Pesaro Urbino");
+        provinces.put("PE", "Pescara");
+        provinces.put("PC", "Piacenza");
+        provinces.put("PI", "Pisa");
+        provinces.put("PT", "Pistoia");
+        provinces.put("PN", "Pordenone");
+        provinces.put("PZ", "Potenza");
+        provinces.put("PO", "Prato");
+        provinces.put("RG", "Ragusa");
+        provinces.put("RA", "Ravenna");
+        provinces.put("RC", "Reggio Calabria");
+        provinces.put("RE", "Reggio Emilia");
+        provinces.put("RI", "Rieti");
+        provinces.put("RN", "Rimini");
+        provinces.put("RM", "Roma");
+        provinces.put("RO", "Rovigo");
+        provinces.put("SA", "Salerno");
+        provinces.put("SS", "Sassari");
+        provinces.put("SV", "Savona");
+        provinces.put("SI", "Siena");
+        provinces.put("SO", "Sondrio");
+        provinces.put("SR", "Siracusa");
+        provinces.put("TA", "Taranto");
+        provinces.put("TE", "Teramo");
+        provinces.put("TR", "Terni");
+        provinces.put("TP", "Trapani");
+        provinces.put("TN", "Trentino");
+        provinces.put("TV", "Treviso");
+        provinces.put("TS", "Trieste");
+        provinces.put("TO", "Torino");
+        provinces.put("UD", "Udine");
+        provinces.put("VA", "Varese");
+        provinces.put("VE", "Venezia");
+        provinces.put("VB", "Verbano-Cusio-Ossola");
+        provinces.put("VE", "Vercelli");
+        provinces.put("VR", "Verona");
+        provinces.put("VV", "Vibo Valentia");
+        provinces.put("VI", "Vicenza");
+        provinces.put("VT", "Viterbo");
+    }
+
+    }

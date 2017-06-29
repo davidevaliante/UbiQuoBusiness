@@ -83,9 +83,7 @@ public class ProposalsFragement extends Fragment {
 
         pRecyclerView = (RecyclerView) rootView.findViewById(R.id.proposalRecycler);
 
-        SharedPreferences userPrefs = getActivity().getSharedPreferences("HARLEE_USER_DATA", Context.MODE_PRIVATE);
-
-        current_city = userPrefs.getString("USER_CITY", "Isernia");
+        String current_city = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE).getString("PLACE_CITY","NA");
         proposalRef = FirebaseDatabase.getInstance().getReference().child("Proposals").child(current_city);
         proposalRef.keepSynced(true);
         proposalUserLikeRef = FirebaseDatabase.getInstance().getReference().child("Likes").child("Proposals");

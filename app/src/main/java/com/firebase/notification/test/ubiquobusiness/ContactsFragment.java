@@ -182,6 +182,7 @@ public class ContactsFragment extends Fragment {
         SharedPreferences userPref = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
         final String phone = userPref.getString("PLACE_PHONE","NA");
         final String place_id = userPref.getString("PLACE_ID","NA");
+        final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid().toString();
 
 
         //caricamento immagine
@@ -238,7 +239,7 @@ public class ContactsFragment extends Fragment {
                         DatabaseReference mapReference = FirebaseDatabase.getInstance().getReference().child("MapData").child(city).child(pushId);
                         mapReference.setValue(newMapInfo);
 
-                        FirebaseDatabase.getInstance().getReference().child("BusinessesEvents").child(city).child(place_id).child(pushId).setValue(true);
+                        FirebaseDatabase.getInstance().getReference().child("BusinessesEvents").child(city).child(userId).child(pushId).setValue(true);
 
                         Toasty.success(getActivity(), "Evento aggiunto con successo !", Toast.LENGTH_SHORT, true).show();
                         getActivity().getSharedPreferences("LAST_EVENT_DATA", 0).edit().clear().commit();

@@ -12,6 +12,13 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +33,7 @@ public class CreateEvent extends AppCompatActivity {
     private PagerAdapter adapter;
     protected Bundle proposal;
     protected String editEventIdString;
+    protected static Business business;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +43,8 @@ public class CreateEvent extends AppCompatActivity {
 
         ButterKnife.bind(this);
 
+
+
         proposal = getIntent().getBundleExtra("proposal_bundle");
         editEventIdString = getIntent().getStringExtra("edit_string_id");
 
@@ -43,6 +53,7 @@ public class CreateEvent extends AppCompatActivity {
         adapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(),createEventFragments);
         newEvenViewPager.setAdapter(adapter);
         newEvenViewPager.setPagingEnabled(false);
+        loadUserData(FirebaseAuth.getInstance().getCurrentUser().getUid().toString());
 
 
     }
@@ -110,6 +121,29 @@ public class CreateEvent extends AppCompatActivity {
 
 
         return fList;
+    }
+
+    private void loadUserData(String userId){
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference().child("Business").child(userId);
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                business = dataSnapshot.getValue(Business.class);
+                NewEventSecondPage secondPage =(NewEventSecondPage) getSupportFragmentManager().getFragments().get(1);
+
+                if(editEventIdString == null && proposal==null) {
+                    //carica i dati del locale nelle view corrispondenti
+                    secondPage.loadPlaceData();
+                }else{
+                    secondPage.loadEditPlaceData();
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
 }

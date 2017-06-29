@@ -183,15 +183,12 @@ public class NewEventSecondPage extends Fragment {
             }
         });
 
-        if(editEventStringId == null && proposal==null) {
-            //carica i dati del locale nelle view corrispondenti
-            loadPlaceData();
-        }else{
-            loadEditPlaceData();
-        }
+
 
         return rootView;
     }
+
+
 
     @Override
     public void onDestroyView() {
@@ -199,15 +196,22 @@ public class NewEventSecondPage extends Fragment {
         unbinder.unbind();
     }
 
-    private void loadPlaceData(){
+    protected void loadPlaceData(){
 
-            SharedPreferences placeData = getActivity().getSharedPreferences("UBIQUO_BUSINESS", Context.MODE_PRIVATE);
+            /*SharedPreferences placeData = getActivity().getSharedPreferences("UBIQUO_BUSINESS", Context.MODE_PRIVATE);
             String placeName = placeData.getString("PLACE_NAME", "NA");
             String placeCity = placeData.getString("PLACE_CITY", "NA");
             String placeAdress = placeData.getString("PLACE_ADRESS", "NA");
             String placeId = placeData.getString("PLACE_ID", "NA");
             Double placeLongitude = UbiQuoBusinessUtils.getDoubleFromEditor(placeData, "PLACE_LONGITUDE", 0.0);
-            Double placeLatitude = UbiQuoBusinessUtils.getDoubleFromEditor(placeData, "PLACE_LATITUDE", 0.0);
+            Double placeLatitude = UbiQuoBusinessUtils.getDoubleFromEditor(placeData, "PLACE_LATITUDE", 0.0);*/
+
+            String placeName = ((CreateEvent)getActivity()).business.getName();
+            String placeCity = ((CreateEvent)getActivity()).business.getCity();
+            String placeAdress = ((CreateEvent)getActivity()).business.getAdress();
+            Double placeLatitude = ((CreateEvent)getActivity()).business.getLatitude();
+            Double placeLongitude = ((CreateEvent)getActivity()).business.getLongitude();
+            String placeId = ((CreateEvent)getActivity()).business.getId();
 
             Log.d("PLACE_LAT : ", "" + placeLatitude);
             Log.d("PLACE_LONG : ", "" + placeLongitude);
@@ -430,7 +434,7 @@ public class NewEventSecondPage extends Fragment {
         return null;
     }
 
-    private void loadEditPlaceData(){
+    protected void loadEditPlaceData(){
         SharedPreferences editPref = getActivity().getSharedPreferences("EDIT_EVENT",Context.MODE_PRIVATE);
         Long time = editPref.getLong("EDIT_DATE",0);
         Double lat = UbiQuoBusinessUtils.getDoubleFromEditor(editPref,"EDIT_LAT",0.0);

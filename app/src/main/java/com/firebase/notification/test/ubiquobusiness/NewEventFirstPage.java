@@ -147,7 +147,8 @@ public class NewEventFirstPage extends Fragment {
         }
 
         if(editEventStringId !=null){
-            loadEditDataIntoPreferences(editEventStringId,getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE).getString("PLACE_CITY","NA"));
+            String placeCity = ((CreateEvent)getActivity()).business.getCity();
+            loadEditDataIntoPreferences(editEventStringId,placeCity);
         }
 
 
@@ -207,11 +208,14 @@ public class NewEventFirstPage extends Fragment {
         String actual_title = eventName.getText().toString().trim();
         Boolean actual_free = isFree;
         sharedPreferences.edit().putBoolean("EDIT_ISFREE",isFree).commit();
-        Float actual_price = Float.valueOf(eventPrice.getText().toString());
-        if(isFree){
-            sharedPreferences.edit().putFloat("EDIT_PRICE",0.0f).commit();
-        }else{
-            sharedPreferences.edit().putFloat("EDIT_PRICE",actual_price).commit();
+        String price_string = eventPrice.getText().toString();
+        if(price_string != null && !price_string.isEmpty()) {
+            Float actual_price = Float.valueOf(price);
+            if (isFree) {
+                sharedPreferences.edit().putFloat("EDIT_PRICE", 0.0f).commit();
+            } else {
+                sharedPreferences.edit().putFloat("EDIT_PRICE", actual_price).commit();
+            }
         }
 
         if(image.equalsIgnoreCase("NA")){

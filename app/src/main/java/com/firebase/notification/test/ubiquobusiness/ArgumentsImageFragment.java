@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.util.TimeUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,6 +38,7 @@ import com.google.firebase.storage.UploadTask;
 import com.squareup.haha.perflib.Main;
 
 import java.io.File;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -110,17 +112,17 @@ public class ArgumentsImageFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 dialog.show();
-                if(dataHasBeenSaved()){
+                if(businessHasRequiredFields()){
                     String mail = email.getText().toString().trim();
                     String password = confirmPassword.getText().toString().trim();
-                    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
-                    sharedPreferences.edit().putString("EMAIL", mail);
+
 
                     mAuth.createUserWithEmailAndPassword(mail,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             if(task.isSuccessful()){
-                                writeNewPlace();
+                                String userId = task.getResult().getUser().getUid();
+                                upDateDatabaseWithNewPlace(userId);
                             }
                         }
                     });
@@ -136,7 +138,7 @@ public class ArgumentsImageFragment extends Fragment {
         return rootView;
     }
 
-    private Boolean dataHasBeenSaved(){
+    private Boolean businessHasRequiredFields(){
         Boolean isOk = true;
         String mail = email.getText().toString().trim();
         String pass = password.getText().toString().trim();
@@ -155,23 +157,6 @@ public class ArgumentsImageFragment extends Fragment {
             return false;
         }
 
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
-        String placeName = sharedPreferences.getString("PLACE_NAME","NA");
-        String placeCity = sharedPreferences.getString("PLACE_CITY","NA");
-        String placeAdress = sharedPreferences.getString("PLACE_ADRESS","NA");
-        String placeId = sharedPreferences.getString("PLACE_ID","NA");
-        String placePhone = sharedPreferences.getString("PLACE_PHONE","NA");
-        Double latitude = UbiQuoBusinessUtils.getDoubleFromEditor(sharedPreferences,"PLACE_LATITUDE",0.0);
-        Double longitude = UbiQuoBusinessUtils.getDoubleFromEditor(sharedPreferences,"PLACE_LONGITUDE",0.0);
-
-        if(placeName.equalsIgnoreCase("NA") || placeCity.equalsIgnoreCase("NA") || placeAdress.equalsIgnoreCase("NA")
-                || latitude == 0.0 || longitude == 0.0){
-
-            Toasty.error(getActivity(),"Errore: alcuni dati precedenti risultano mancanti", Toast.LENGTH_SHORT).show();
-            isOk = false;
-            return false;
-
-        }
 
         return isOk;
     }
@@ -241,6 +226,56 @@ public class ArgumentsImageFragment extends Fragment {
         //getActivity().finish();
 
 
+
+    }
+
+    private void upDateDatabaseWithNewPlace(final String userId){
+
+        //prende l'immagine la comprime e tenta l'upload
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
+        String imageUri = sharedPreferences.getString("PLACE_AVATAR","NA");
+        Uri avatar = Uri.parse(imageUri);
+        final File compressedFile = Compressor.getDefault(getActivity()).compressToFile(new File(avatar.getPath()));
+        //per rendere il path unico
+        final String uniqueStoragePath = avatar.getLastPathSegment()+System.currentTimeMillis();
+        final StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("Business_avatar");
+
+        //inizializzatore di base per alcuni counter
+        ((Registration)getActivity()).newBusiness.setContacts("NA");
+        ((Registration)getActivity()).newBusiness.setPhones("NA");
+        ((Registration)getActivity()).newBusiness.setRating(0);
+        ((Registration)getActivity()).newBusiness.setLikes(0);
+        ((Registration)getActivity()).newBusiness.setArguments("NA");
+        ((Registration)getActivity()).newBusiness.setToken("no_token");
+
+        //aggiorna le shared preferences per far in modo che nella MainUserPage venga current_city sia sempre uguale a placeCity
+        SharedPreferences preferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
+        String placeCity = ((Registration)getActivity()).newBusiness.getCity();
+        preferences.edit().putString("PLACE_CITY",placeCity).apply();
+
+        storageReference.child(uniqueStoragePath).putFile(Uri.fromFile(compressedFile)).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                String downloadUrl = task.getResult().getDownloadUrl().toString();
+                String placeCity = ((Registration)getActivity()).newBusiness.getCity();
+                ((Registration)getActivity()).newBusiness.setImage(downloadUrl);
+                Long registrationTime = System.currentTimeMillis();
+                ((Registration)getActivity()).newBusiness.setIscrizione(registrationTime);
+
+                Business business = ((Registration)getActivity()).newBusiness;
+
+                //Nodi nel quale fare l'upload
+                DatabaseReference businessRef = FirebaseDatabase.getInstance().getReference().child("Business").child(userId);
+                DatabaseReference cityBusinessRef = FirebaseDatabase.getInstance().getReference().child("City-Businesses").child(placeCity).child(userId);
+                businessRef.setValue(business);
+                cityBusinessRef.setValue(business);
+            }
+        });
+
+        dialog.dismiss();
+        Intent toUserPage = new Intent(getActivity(),MainUserPage.class);
+        startActivity(toUserPage);
+        getActivity().finish();
 
     }
 }

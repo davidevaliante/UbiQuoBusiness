@@ -2,6 +2,7 @@ package com.firebase.notification.test.ubiquobusiness;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -28,6 +30,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.hlab.fabrevealmenu.enums.Direction;
 import com.hlab.fabrevealmenu.model.FABMenuItem;
 import com.hlab.fabrevealmenu.view.FABRevealMenu;
@@ -37,6 +40,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import es.dmoral.toasty.Toasty;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 import uk.co.chrisjenx.calligraphy.CalligraphyUtils;
 
@@ -59,6 +63,7 @@ public class MainUserPage extends AppCompatActivity  {
     private String[] mDirectionStrings = {"Direction - LEFT", "Direction - UP"};
     private Direction currentDirection = Direction.LEFT;
     protected  String place_city;
+    protected static Business business;
 
 
     @Override
@@ -68,28 +73,26 @@ public class MainUserPage extends AppCompatActivity  {
         ButterKnife.bind(this);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
 
+        /*FirebaseAuth.getInstance().signOut();
+        finish();
+*/
 
        /* FirebaseAuth.getInstance().signOut();
         finish();*/
         final Typeface tf = Typeface.createFromAsset(MainUserPage.this.getAssets(), "fonts/Hero.otf");
         //loadUserDataIntoPreferences(FirebaseAuth.getInstance().getCurrentUser().getUid());
-
         Toolbar toolbar = (Toolbar) findViewById(R.id.my_tb);
-
         toolbar.setTitleTextColor(ContextCompat.getColor(this, R.color.pureWhite));
         setSupportActionBar(toolbar);
         getSupportActionBar().setHomeAsUpIndicator(ContextCompat.getDrawable(this, R.drawable.vector_burger_menu_24));
-
 
         mAuth = FirebaseAuth.getInstance();
         List<Fragment> userPageFragments = initializeFragments();
         pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(), userPageFragments);
         viewPager.setAdapter(pagerAdapter);
         tabLayout.setTabTextColors(ContextCompat.getColor(this,R.color.pureWhite),ContextCompat.getColor(this,R.color.pureWhite));
-
         tabLayout.setSelectedTabIndicatorColor(ContextCompat.getColor(this,R.color.colorAccent));
         tabLayout.setupWithViewPager(viewPager);
-
 
         //per cambiare il font nel tablayout
         ViewGroup vg = (ViewGroup) tabLayout.getChildAt(0);
@@ -98,7 +101,6 @@ public class MainUserPage extends AppCompatActivity  {
         tabSelectedListener = new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-
 
             }
 
@@ -113,19 +115,18 @@ public class MainUserPage extends AppCompatActivity  {
             }
         } ;
         tabLayout.addOnTabSelectedListener(tabSelectedListener);
-
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
 
-        /*//token refresher
+        //token refresher
         final Handler firebaseTokenHandler = new Handler();
         firebaseTokenHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 //refresha il token
-                UbiQuoBusinessUtils.refreshCurrentUserToken(getApplication(),place_city);
+                refreshTokenAndLoadUserData(FirebaseAuth.getInstance().getCurrentUser().getUid().toString());
             }
-        }, 5000);*/
+        }, 5000);
 
     }
 
@@ -182,15 +183,9 @@ public class MainUserPage extends AppCompatActivity  {
 
     private void logMeOut() {
         FirebaseAuth.getInstance().signOut();
-        this.finish();
+        finish();
     }
 
-    private void initItems(boolean toShowDoubleItems) {
-        items = new ArrayList<>();
-        for (int i = 0; i < (toShowDoubleItems ? 10 : 5); i++) {
-            items.add(new FABMenuItem("Item " + i, BitmapFactory.decodeResource(getResources(), R.drawable.accent_clock_14)));
-        }
-    }
 
     @Override
     public void onBackPressed() {
@@ -244,6 +239,51 @@ public class MainUserPage extends AppCompatActivity  {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Business business = dataSnapshot.getValue(Business.class);
                 place_city = business.getCity();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void loadCurrentBusiness(){
+        final String businessId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        DatabaseReference businessReference = FirebaseDatabase.getInstance().getReference().child("Business").child(businessId);
+
+        businessReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                business = dataSnapshot.getValue(Business.class);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    private void refreshTokenAndLoadUserData(final String userId){
+        final String token = FirebaseInstanceId.getInstance().getToken();
+        DatabaseReference tokenReference = FirebaseDatabase.getInstance().getReference().child("Token").child(userId).child("user_token");
+        tokenReference.setValue(token);
+
+         DatabaseReference businessReference = FirebaseDatabase.getInstance().getReference().child("Business").child(userId);
+
+        businessReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Business updatedTokenBusiness = dataSnapshot.getValue(Business.class);
+                //aggiorna l'oggetto con il nuovo token ed inizializza l'oggetto di classe
+                updatedTokenBusiness.setToken(token);
+                business = updatedTokenBusiness;
+                //pusha il nuovo oggetto nella referenza
+                FirebaseDatabase.getInstance().getReference().child("Business").child(userId).setValue(updatedTokenBusiness);
+                SharedPreferences prefs = getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
+                prefs.edit().putString("PLACE_CITY",updatedTokenBusiness.getCity()).apply();
+
             }
 
             @Override

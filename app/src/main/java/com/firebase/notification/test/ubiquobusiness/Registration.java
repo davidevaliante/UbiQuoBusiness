@@ -45,6 +45,9 @@ public class Registration extends FragmentActivity implements GoogleApiClient.On
     private FirebaseAuth.AuthStateListener authStateListener;
     private PagerAdapter pagerAdapter;
     private GoogleApiClient  mGoogleApiClient;
+    protected static Business newBusiness = new Business();
+    protected static Double cityLatitude, cityLongitude;
+    protected static String croppedImagePath;
 
     @BindView(R.id.registrationViewPager) CustomViewPager registrationViewPager;
 

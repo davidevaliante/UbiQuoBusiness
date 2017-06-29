@@ -82,8 +82,7 @@ public class OpeningClosing extends Fragment {
                     public void onTimeSet(TimePickerDialog view, int hourOfDay, int minute, int second) {
                         String opening = UbiQuoBusinessUtils.hourFormatter(hourOfDay,minute);
                         openingTime.setText("Apertura\n"+opening);
-                        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
-                        sharedPreferences.edit().putString("PLACE_OPENING_TIME",opening).commit();
+                        ((Registration)getActivity()).newBusiness.setOpeningTime(opening);
 
 
                     }
@@ -101,8 +100,7 @@ public class OpeningClosing extends Fragment {
                     public void onTimeSet(TimePickerDialog view, int hourOfDay, int minute, int second) {
                         String closing = UbiQuoBusinessUtils.hourFormatter(hourOfDay,minute);
                         closingTime.setText("Chiusura\n"+closing);
-                        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
-                        sharedPreferences.edit().putString("PLACE_CLOSING_TIME",closing).commit();
+                        ((Registration)getActivity()).newBusiness.setClosingTime(closing);
 
                     }
                 },true);
@@ -111,7 +109,6 @@ public class OpeningClosing extends Fragment {
             }
         });
 
-        loadOldData();
 
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,7 +129,7 @@ public class OpeningClosing extends Fragment {
             }
         });
 
-
+        loadImageIfAvaible();
 
         return rootView;
     }
@@ -185,30 +182,31 @@ public class OpeningClosing extends Fragment {
     private Boolean canGoNext(){
         Boolean canGoNext = true;
         SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
-        String startingTime = sharedPreferences.getString("PLACE_OPENING_TIME","NA");
-        String endingTime = sharedPreferences.getString("PLACE_CLOSING_TIME","NA");
+        String startingTime = ((Registration)getActivity()).newBusiness.getOpeningTime();
+        String endingTime = ((Registration)getActivity()).newBusiness.getClosingTime();
         String imageUri = sharedPreferences.getString("PLACE_AVATAR","NA");
 
-        if(startingTime.isEmpty() || endingTime.isEmpty()){
+        if(startingTime == null || endingTime == null || startingTime.isEmpty() || endingTime.isEmpty()){
             Toasty.error(getActivity(),"Imposta gli orari di apertura e chiusura",Toast.LENGTH_SHORT,true).show();
-            canGoNext = false;
+            return false;
+        }
+
+        if(imageUri.isEmpty()||imageUri.equalsIgnoreCase("NA")){
+            Toasty.error(getActivity(),"Scegli un immagine di profilo",Toast.LENGTH_SHORT,true).show();
+            return false;
         }
 
         return canGoNext;
     }
 
-    private void loadOldData(){
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
-        String start = sharedPreferences.getString("PLACE_OPENING_TIME","NA");
-        String end = sharedPreferences.getString("PLACE_CLOSING_TIME","NA");
-        if(!start.isEmpty() && !start.equalsIgnoreCase("NA")){
-            openingTime.setText("Apertura\n"+start);
-        }
-
-
-        if(!end.isEmpty() && !end.equalsIgnoreCase("NA")){
-            closingTime.setText("Chiusura\n"+end);
+    private void loadImageIfAvaible(){
+        SharedPreferences pref = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
+        String image = pref.getString("PLACE_AVATAR","NA");
+        if(!image.equalsIgnoreCase("NA")){
+            avatar.setVisibility(View.VISIBLE);
+            avatar.setImageURI(Uri.parse(image));
         }
     }
+
 
 }

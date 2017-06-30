@@ -141,13 +141,14 @@
                 android:layout_marginLeft="8dp"
                 android:layout_marginRight="8dp"
                 android:gravity="center"
+                android:paddingTop="40dp"
                 android:text="Data evento"
                 android:textSize="18sp"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                android:layout_marginTop="80dp" />
+                android:layout_marginTop="42dp" />
 
             <View
                 android:id="@+id/divider"
@@ -170,6 +171,7 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginTop="16dp"
                 android:gravity="center"
+                android:paddingBottom="40dp"
                 android:text="Orario d'inizio"
                 android:textSize="18sp"
                 app:layout_constraintHorizontal_bias="0.0"

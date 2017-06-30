@@ -67,6 +67,8 @@ public class NewEventFirstPage extends Fragment {
     private Boolean isFree = true;
     private Bundle proposal;
     private String editEventStringId;
+    private DynamicData dynamicData;
+    private StaticData staticData;
 
     public NewEventFirstPage() {
         // Required empty public constructor
@@ -84,15 +86,6 @@ public class NewEventFirstPage extends Fragment {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_new_event_first_page, container, false);
         unbinder = ButterKnife.bind(this, rootView);
 
-        //se non è vuoto il bundle l'evento è derivato da una proposta
-        if(((CreateEvent)getActivity()).proposal != null){
-            proposal = ((CreateEvent)getActivity()).proposal;
-        }
-
-        //se la string non è null allora siamo in edit mode
-        if(((CreateEvent)getActivity()).editEventIdString != null){
-            editEventStringId = ((CreateEvent)getActivity()).editEventIdString;
-        }
 
         //default, oscurare questi elementi
         imagePicker.setVisibility(View.GONE);
@@ -124,35 +117,72 @@ public class NewEventFirstPage extends Fragment {
         eventNextFirst.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //se non è in editMode
-                if(editEventStringId == null){
-                    if(canGoNext()){
-                        saveData();
-                        ((CreateEvent)getActivity()).newEvenViewPager.setCurrentItem(1,true);
-                    }
-                }else{
-                    if(canEditNext()){
-                        ((CreateEvent)getActivity()).newEvenViewPager.setCurrentItem(1,true);
+               if(canGoNext()){
+                   //aggiorna l'oggetto associato all'activity
+                   String title = eventName.getText().toString().trim();
+                   ((CreateEvent)getActivity()).getDynamicData().seteName(title);
+                   ((CreateEvent)getActivity()).getDynamicData().setFree(isFree);
+                   ((CreateEvent)getActivity()).mapInfo.seteName(title);
 
+                    if(!eventPrice.getText().toString().isEmpty()){
+                        Float price = Float.valueOf(eventPrice.getText().toString());
+                        ((CreateEvent)getActivity()).getDynamicData().setPrice(price);
+                    }else{
+                        ((CreateEvent)getActivity()).getDynamicData().setPrice(0.0f);
                     }
-                }
+
+                   String description = eventDescription.getText().toString().trim();
+                   ((CreateEvent)getActivity()).getStaticData().setDesc(description);
+                   if(((CreateEvent)getActivity()).eventImageUri != null) {
+                       Log.d("Image : ", ((CreateEvent) getActivity()).eventImageUri);
+                   }
+
+                   ((CreateEvent)getActivity()).newEvenViewPager.setCurrentItem(1,true);
+               }
             }
         });
 
-        if(editEventStringId == null && proposal==null){
-            loadLastData();
-        }
-        if(proposal !=null){
-            loadProposalData();
-        }
 
-        if(editEventStringId !=null){
-            String placeCity = ((CreateEvent)getActivity()).business.getCity();
-            loadEditDataIntoPreferences(editEventStringId,placeCity);
-        }
+
+
 
 
         return rootView;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+
+
+    }
+
+    protected void loadFirstPageDataFromBundle(Bundle proposal){
+        Bundle bundle = proposal;
+        String proposalTitle = proposal.getString("title");
+        eventName.setText(proposalTitle);
+        String proposalDescription = proposal.getString("description");
+        eventDescription.setText(proposalDescription);
+    }
+
+    protected void loadFirstPageEditData(){
+        //dati dinamici
+        String title = dynamicData.geteName();
+        eventName.setText(title);
+        Boolean isFree = dynamicData.getFree();
+        if(!isFree){
+            radioRealButtonGroup.setPosition(1);
+            Float price = dynamicData.getPrice();
+            eventPrice.setVisibility(View.VISIBLE);
+            eventPrice.setText(""+price);
+        }
+
+        //Dati statici
+        String description = staticData.getDesc();
+        eventDescription.setText(description);
+
+
     }
 
 
@@ -178,202 +208,55 @@ public class NewEventFirstPage extends Fragment {
                 imagePicker.setImageURI(result.getUri());
                 imagePicker.setBorderColor(R.color.colorAccent);
 
-                //se la string è vuota l'evento è ex novo oppure derivato da una proposta
-                if(editEventStringId == null) {
-                    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA", Context.MODE_PRIVATE);
-                    sharedPreferences.edit().putString("EVENT_IMAGE", result.getUri().toString()).commit();
-                }else{
-                    SharedPreferences sharedPreferences = getActivity().getSharedPreferences("EDIT_EVENT", Context.MODE_PRIVATE);
-                    sharedPreferences.edit().putString("EDIT_IMAGE", result.getUri().toString()).commit();
-                }
+                //se viene cambiata l'immagine
+                ((CreateEvent)getActivity()).eventImageUri = result.getUri().toString();
+
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
             }
         }
     }
 
-    private Boolean canEditNext(){
-        Boolean canEditNext = true;
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("EDIT_EVENT", Context.MODE_PRIVATE);
+    protected Boolean canGoNext(){
+        Boolean canGonext = true;
 
-        //DATI CARICATI DA DYNAMIC DATA
-        String image = sharedPreferences.getString("EDIT_IMAGE","NA");
-        String title = sharedPreferences.getString("EDIT_TITLE","NA");
-        Long date = sharedPreferences.getLong("EDIT_DATE",0);
-        Boolean free = sharedPreferences.getBoolean("EDIT_ISFREE",true);
-        Float price = sharedPreferences.getFloat("EDIT_PRICE",0.0f);
-        String organizer = sharedPreferences.getString("EDIT_ORGANIZER","NA");
-
-        //DATI COMPARATIVI
-        String actual_title = eventName.getText().toString().trim();
-        Boolean actual_free = isFree;
-        sharedPreferences.edit().putBoolean("EDIT_ISFREE",isFree).commit();
-        String price_string = eventPrice.getText().toString();
-        if(price_string != null && !price_string.isEmpty()) {
-            Float actual_price = Float.valueOf(price);
-            if (isFree) {
-                sharedPreferences.edit().putFloat("EDIT_PRICE", 0.0f).commit();
-            } else {
-                sharedPreferences.edit().putFloat("EDIT_PRICE", actual_price).commit();
-            }
-        }
-
-        if(image.equalsIgnoreCase("NA")){
-            Toasty.error(getActivity(),"Immagine profilo mancante", Toast.LENGTH_SHORT,true).show();
-            return false;
-        }else{
-            Log.d("image : ",image);
-        }
-
-        if(actual_title.isEmpty() || actual_title.length()<7){
-            Toasty.error(getActivity(),"Il titolo deve contenere almeno 6 caratteri", Toast.LENGTH_SHORT,true).show();
-            return false;
-        }else{
-            sharedPreferences.edit().putString("EDIT_TITLE",actual_title).commit();
-            Log.d("Title : ",sharedPreferences.getString("EDIT_TITLE","NA"));
-
-        }
-
-
-        //******END DATI CARICATI DA DYNAMIC DATA
-
-
-        //DATI CARICATI DA STATIC DATA
-        String desc = sharedPreferences.getString("EDIT_DESC","NA");
-
-        //dati comparativi
-        String actual_desc = eventDescription.getText().toString().trim();
-        if(actual_desc.length()<31){
-            Toasty.error(getActivity(),"La descrizione deve contenere almeno 30 caratteri", Toast.LENGTH_SHORT,true).show();
-            return false;
-        }else{
-            sharedPreferences.edit().putString("EDIT_DESC",actual_desc).commit();
-            Log.d("Desc : ",sharedPreferences.getString("EDIT_DESC","NA"));
-
-        }
-
-        //******END DATI CARICATI DA STATIC DATA
-
-        Map<String, ?> allEntries = sharedPreferences.getAll();
-        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
-            Log.d("map values", entry.getKey() + ": " + entry.getValue().toString());
-        }
-
-        return canEditNext;
-
-    }
-
-    private Boolean canGoNext(){
-        Boolean canGoNext = true;
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA", Context.MODE_PRIVATE);
-        String eventImage = sharedPreferences.getString("EVENT_IMAGE","NA");
-        String eventTitle = eventName.getText().toString().trim();
+        String name = eventName.getText().toString().trim();
         String description = eventDescription.getText().toString().trim();
-        String price = eventPrice.getText().toString().trim();
-        if(eventImage.isEmpty() || eventImage.equalsIgnoreCase("NA")){
-            Toasty.error(getActivity(),"Scegli un immagine per l'evento", Toast.LENGTH_SHORT,true).show();
-            canGoNext = false;
+        Boolean free = isFree;
+        Float price = 0.0f;
+        if(!eventPrice.getText().toString().isEmpty()) {
+            price = Float.valueOf(eventPrice.getText().toString());
+        }
+        String downloadUrl = ((CreateEvent)getActivity()).getDynamicData().getiPath();
+        String imageUri = ((CreateEvent)getActivity()).eventImageUri;
+
+        if(name.length() < 6){
+            Toasty.error(getActivity(),"Il titolo deve contenere almeno 6 caratteri",Toast.LENGTH_SHORT,true).show();
             return false;
         }
 
-        if(eventTitle.isEmpty()){
-            Toasty.error(getActivity(),"Inserisci un titolo", Toast.LENGTH_SHORT,true).show();
-            canGoNext = false;
+        if(description.length() <31){
+            Toasty.error(getActivity(),"La descrizione deve contenere almeno 30 caratteri",Toast.LENGTH_SHORT,true).show();
             return false;
         }
 
-        if(description.isEmpty()){
-            Toasty.error(getActivity(),"Inserisci una descrizione", Toast.LENGTH_SHORT,true).show();
-            canGoNext = false;
+        if(!free && price == 0.0f){
+            Toasty.error(getActivity(),"Specifica il prezzo di ingresso",Toast.LENGTH_SHORT,true).show();
             return false;
         }
 
-        if(description.length() < 30){
-            Toasty.error(getActivity(),"La descrizione deve contenere almeno 30 caratteri", Toast.LENGTH_SHORT,true).show();
-            canGoNext = false;
+        if(downloadUrl == null && imageUri == null){
+            Toasty.error(getActivity(),"Aggiungi una copertina per l'evento",Toast.LENGTH_SHORT,true).show();
             return false;
         }
 
-        if(!isFree && price.isEmpty()){
-            Toasty.error(getActivity(),"Hai dimenticato il prezzo di ingresso", Toast.LENGTH_SHORT,true).show();
-            canGoNext = false;
-            return false;
-        }
 
-        return canGoNext;
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-    }
-
-    private void loadLastData(){
-
-            SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA", Context.MODE_PRIVATE);
-            String imageUri = sharedPreferences.getString("EVENT_IMAGE", "NA");
-            String title = sharedPreferences.getString("EVENT_TITLE", "NA");
-            String description = sharedPreferences.getString("EVENT_DESCRIPTION", "NA");
-            Boolean free = sharedPreferences.getBoolean("EVENT_IS_FREE", true);
-
-            if (!free) {
-                Integer price = sharedPreferences.getInt("EVENT_PRICE", 0);
-                radioRealButtonGroup.setPosition(1);
-                eventPrice.setVisibility(View.VISIBLE);
-                eventPrice.setText("" + price);
-                isFree = false;
-            }
-
-            if (!title.equalsIgnoreCase("NA") && !title.isEmpty()) {
-                eventName.setText(title);
-            }
-
-            if (!description.equalsIgnoreCase("NA") && !description.isEmpty()) {
-                eventDescription.setText(description);
-            }
-
-            if (!imageUri.equalsIgnoreCase("NA")) {
-                imagePicker.setVisibility(View.VISIBLE);
-                imagePicker.setBorderColor(R.color.colorAccent);
-                Uri uri = Uri.parse(imageUri);
-                imagePicker.setImageURI(uri);
-            }
+        return canGonext;
     }
 
 
-    protected void loadProposalData(){
-        Bundle bundle = ((CreateEvent)getActivity()).proposal;
 
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA", Context.MODE_PRIVATE);
-        String title = bundle.getString("title","NA");
-        String description = bundle.getString("description","NA");
-        String proposalId = bundle.getString("id","NA");
-        Boolean free = sharedPreferences.getBoolean("EVENT_IS_FREE", true);
-
-
-
-        if(!proposalId.isEmpty() && !proposalId.equalsIgnoreCase("NA")){
-            sharedPreferences.edit().putString("PROPOSAL_ID",proposalId).commit();
-        }
-
-        if (!free) {
-            Integer price = sharedPreferences.getInt("EVENT_PRICE", 0);
-            radioRealButtonGroup.setPosition(1);
-            eventPrice.setVisibility(View.VISIBLE);
-            eventPrice.setText("" + price);
-            isFree = false;
-        }
-
-        if (!title.equalsIgnoreCase("NA") && !title.isEmpty()) {
-            eventName.setText(title);
-        }
-
-        if (!description.equalsIgnoreCase("NA") && !description.isEmpty()) {
-            eventDescription.setText(description);
-        }
-    }
-
-    protected void saveData(){
+   /* protected void saveData(){
         Bundle bundle = ((CreateEvent)getActivity()).proposal;
         //salva solo se non derivato da proposta
 
@@ -388,7 +271,7 @@ public class NewEventFirstPage extends Fragment {
                 }
             }
 
-    }
+    }*/
 
     @Override
     public void onDestroyView() {
@@ -396,7 +279,12 @@ public class NewEventFirstPage extends Fragment {
         unbinder.unbind();
     }
 
-    protected void loadEditDataIntoPreferences(String eventId,String city){
+
+
+
+
+
+    /*protected void loadEditDataIntoPreferences(String eventId,String city){
         loadFromDynamicData(eventId,city);
         loadFromStaticData(eventId,city);
         loadFromMapData(eventId,city);
@@ -536,6 +424,181 @@ public class NewEventFirstPage extends Fragment {
         mapRef.addListenerForSingleValueEvent(mapListener);
 
     }
+
+    private Boolean canEditNext(){
+        Boolean canEditNext = true;
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("EDIT_EVENT", Context.MODE_PRIVATE);
+
+        //DATI CARICATI DA DYNAMIC DATA
+        String image = sharedPreferences.getString("EDIT_IMAGE","NA");
+        String title = sharedPreferences.getString("EDIT_TITLE","NA");
+        Long date = sharedPreferences.getLong("EDIT_DATE",0);
+        Boolean free = sharedPreferences.getBoolean("EDIT_ISFREE",true);
+        Float price = sharedPreferences.getFloat("EDIT_PRICE",0.0f);
+        String organizer = sharedPreferences.getString("EDIT_ORGANIZER","NA");
+
+        //DATI COMPARATIVI
+        String actual_title = eventName.getText().toString().trim();
+        Boolean actual_free = isFree;
+        sharedPreferences.edit().putBoolean("EDIT_ISFREE",isFree).commit();
+        String price_string = eventPrice.getText().toString();
+        if(price_string != null && !price_string.isEmpty()) {
+            Float actual_price = Float.valueOf(price);
+            if (isFree) {
+                sharedPreferences.edit().putFloat("EDIT_PRICE", 0.0f).commit();
+            } else {
+                sharedPreferences.edit().putFloat("EDIT_PRICE", actual_price).commit();
+            }
+        }
+
+        if(image.equalsIgnoreCase("NA")){
+            Toasty.error(getActivity(),"Immagine profilo mancante", Toast.LENGTH_SHORT,true).show();
+            return false;
+        }else{
+            Log.d("image : ",image);
+        }
+
+        if(actual_title.isEmpty() || actual_title.length()<7){
+            Toasty.error(getActivity(),"Il titolo deve contenere almeno 6 caratteri", Toast.LENGTH_SHORT,true).show();
+            return false;
+        }else{
+            sharedPreferences.edit().putString("EDIT_TITLE",actual_title).commit();
+            Log.d("Title : ",sharedPreferences.getString("EDIT_TITLE","NA"));
+
+        }
+
+
+        /*//******END DATI CARICATI DA DYNAMIC DATA
+
+
+        //DATI CARICATI DA STATIC DATA
+        String desc = sharedPreferences.getString("EDIT_DESC","NA");
+
+        //dati comparativi
+        String actual_desc = eventDescription.getText().toString().trim();
+        if(actual_desc.length()<31){
+            Toasty.error(getActivity(),"La descrizione deve contenere almeno 30 caratteri", Toast.LENGTH_SHORT,true).show();
+            return false;
+        }else{
+            sharedPreferences.edit().putString("EDIT_DESC",actual_desc).commit();
+            Log.d("Desc : ",sharedPreferences.getString("EDIT_DESC","NA"));
+
+        }
+
+        /*//******END DATI CARICATI DA STATIC DATA
+
+        Map<String, ?> allEntries = sharedPreferences.getAll();
+        for (Map.Entry<String, ?> entry : allEntries.entrySet()) {
+            Log.d("map values", entry.getKey() + ": " + entry.getValue().toString());
+        }
+
+        return canEditNext;
+
+    }
+
+    private Boolean canGoNext(){
+        Boolean canGoNext = true;
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA", Context.MODE_PRIVATE);
+        String eventImage = sharedPreferences.getString("EVENT_IMAGE","NA");
+        String eventTitle = eventName.getText().toString().trim();
+        String description = eventDescription.getText().toString().trim();
+        String price = eventPrice.getText().toString().trim();
+        if(eventImage.isEmpty() || eventImage.equalsIgnoreCase("NA")){
+            Toasty.error(getActivity(),"Scegli un immagine per l'evento", Toast.LENGTH_SHORT,true).show();
+            canGoNext = false;
+            return false;
+        }
+
+        if(eventTitle.isEmpty()){
+            Toasty.error(getActivity(),"Inserisci un titolo", Toast.LENGTH_SHORT,true).show();
+            canGoNext = false;
+            return false;
+        }
+
+        if(description.isEmpty()){
+            Toasty.error(getActivity(),"Inserisci una descrizione", Toast.LENGTH_SHORT,true).show();
+            canGoNext = false;
+            return false;
+        }
+
+        if(description.length() < 30){
+            Toasty.error(getActivity(),"La descrizione deve contenere almeno 30 caratteri", Toast.LENGTH_SHORT,true).show();
+            canGoNext = false;
+            return false;
+        }
+
+        if(!isFree && price.isEmpty()){
+            Toasty.error(getActivity(),"Hai dimenticato il prezzo di ingresso", Toast.LENGTH_SHORT,true).show();
+            canGoNext = false;
+            return false;
+        }
+
+        return canGoNext;
+    }
+
+    private void loadLastData(){
+
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA", Context.MODE_PRIVATE);
+        String imageUri = sharedPreferences.getString("EVENT_IMAGE", "NA");
+        String title = sharedPreferences.getString("EVENT_TITLE", "NA");
+        String description = sharedPreferences.getString("EVENT_DESCRIPTION", "NA");
+        Boolean free = sharedPreferences.getBoolean("EVENT_IS_FREE", true);
+
+        if (!free) {
+            Integer price = sharedPreferences.getInt("EVENT_PRICE", 0);
+            radioRealButtonGroup.setPosition(1);
+            eventPrice.setVisibility(View.VISIBLE);
+            eventPrice.setText("" + price);
+            isFree = false;
+        }
+
+        if (!title.equalsIgnoreCase("NA") && !title.isEmpty()) {
+            eventName.setText(title);
+        }
+
+        if (!description.equalsIgnoreCase("NA") && !description.isEmpty()) {
+            eventDescription.setText(description);
+        }
+
+        if (!imageUri.equalsIgnoreCase("NA")) {
+            imagePicker.setVisibility(View.VISIBLE);
+            imagePicker.setBorderColor(R.color.colorAccent);
+            Uri uri = Uri.parse(imageUri);
+            imagePicker.setImageURI(uri);
+        }
+    }
+
+    protected void loadProposalData(){
+        Bundle bundle = ((CreateEvent)getActivity()).proposal;
+
+        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA", Context.MODE_PRIVATE);
+        String title = bundle.getString("title","NA");
+        String description = bundle.getString("description","NA");
+        String proposalId = bundle.getString("id","NA");
+        Boolean free = sharedPreferences.getBoolean("EVENT_IS_FREE", true);
+
+
+
+        if(!proposalId.isEmpty() && !proposalId.equalsIgnoreCase("NA")){
+            sharedPreferences.edit().putString("PROPOSAL_ID",proposalId).commit();
+        }
+
+        if (!free) {
+            Integer price = sharedPreferences.getInt("EVENT_PRICE", 0);
+            radioRealButtonGroup.setPosition(1);
+            eventPrice.setVisibility(View.VISIBLE);
+            eventPrice.setText("" + price);
+            isFree = false;
+        }
+
+        if (!title.equalsIgnoreCase("NA") && !title.isEmpty()) {
+            eventName.setText(title);
+        }
+
+        if (!description.equalsIgnoreCase("NA") && !description.isEmpty()) {
+            eventDescription.setText(description);
+        }
+    }*/
 
 
 

@@ -5,13 +5,18 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -19,7 +24,9 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -30,10 +37,21 @@ public class CreateEvent extends AppCompatActivity {
 
     @BindView(R.id.newEvenViewPager)
     CustomViewPager newEvenViewPager;
-    private PagerAdapter adapter;
+    public PagerAdapter adapter;
     protected Bundle proposal;
     protected String editEventIdString;
+    protected String editEventCity;
     protected static Business business;
+    protected static DynamicData dynamicData = new DynamicData();
+    protected static StaticData staticData = new StaticData();
+    protected static MapInfo mapInfo = new MapInfo();
+    protected static String city;
+    protected static String eventImageDownload;
+    protected static String eventImageUri;
+    protected static String organizer, organizerId;
+    protected NewEventFirstPage firstPage;
+    protected NewEventSecondPage secondPage;
+    protected ContactsFragment contacts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,24 +65,45 @@ public class CreateEvent extends AppCompatActivity {
 
         proposal = getIntent().getBundleExtra("proposal_bundle");
         editEventIdString = getIntent().getStringExtra("edit_string_id");
+        editEventCity = getIntent().getStringExtra("edit_string_city");
 
+
+        //una volta caricati i dati crea l'adapter
         List<Fragment> createEventFragments = initializeFragments();
-
         adapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(),createEventFragments);
+        newEvenViewPager.setOffscreenPageLimit(3);
         newEvenViewPager.setAdapter(adapter);
         newEvenViewPager.setPagingEnabled(false);
+
+
         loadUserData(FirebaseAuth.getInstance().getCurrentUser().getUid().toString());
+
+
+        if(editEventIdString != null){
+            loadEventData(editEventIdString);
+        }
+
+        if(proposal != null){
+            loadProposalData(proposal);
+        }
+
 
 
     }
 
 
-    private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
+    public class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
         List<Fragment> registrationFragments;
 
         public ScreenSlidePagerAdapter(FragmentManager fm, List<Fragment> registrationFragments) {
             super(fm);
             this.registrationFragments = registrationFragments;
+
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            return super.instantiateItem(container, position);
         }
 
         @Override
@@ -76,6 +115,8 @@ public class CreateEvent extends AppCompatActivity {
         public int getCount() {
             return this.registrationFragments.size();
         }
+
+
 
 
     }
@@ -103,7 +144,7 @@ public class CreateEvent extends AppCompatActivity {
             // Back button. This calls finish() on this activity and pops the back stack.
            NewEventFirstPage firstPage = (NewEventFirstPage)getSupportFragmentManager().getFragments().get(0);
             if(editEventIdString == null && proposal == null){
-                firstPage.saveData();
+                //firstPage.saveData();
             }
 
             super.onBackPressed();
@@ -119,7 +160,6 @@ public class CreateEvent extends AppCompatActivity {
         fList.add(NewEventSecondPage.newInstance());
         fList.add(ContactsFragment.newInstance());
 
-
         return fList;
     }
 
@@ -129,13 +169,153 @@ public class CreateEvent extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 business = dataSnapshot.getValue(Business.class);
+                city = business.getCity();
+                Log.d("Size : ", ""+getSupportFragmentManager().getFragments().size());
                 NewEventSecondPage secondPage =(NewEventSecondPage) getSupportFragmentManager().getFragments().get(1);
+                String placeName =  business.getName();
+                String adress = business.getAdress();
+                String city = business.getCity();
+                Double latitude = business.getLatitude();
+                Double longitude = business.getLongitude();
+                String id = business.getId();
+                String phone = business.getNumber();
 
-                if(editEventIdString == null && proposal==null) {
-                    //carica i dati del locale nelle view corrispondenti
-                    secondPage.loadPlaceData();
-                }else{
-                    secondPage.loadEditPlaceData();
+                //di base carica nelle variabili di classe del fragment le informazioni del locale
+                mapInfo.setLat(latitude);
+                secondPage.latitude = latitude;
+                mapInfo.setLng(longitude);
+                secondPage.longitude = longitude;
+                mapInfo.setAdress(adress);
+                secondPage.adress = adress;
+                secondPage.createEventAutoAdress.setText(adress);
+                secondPage.city = city;
+                secondPage.createEventAutoCity.setText(city);
+                mapInfo.setId(id);
+                mapInfo.setPhone(phone);
+                secondPage.eventOrganizer.setText(placeName);
+                secondPage.createEventAutoCity.setText(city);
+                secondPage.createEventAutoAdress.setText(adress);
+                organizer = business.getName();
+                organizerId = business.getId();
+                mapInfo.setpName(business.getName());
+                dynamicData.setpName(business.getName());
+
+                ContactsFragment contactsFragment = (ContactsFragment)getSupportFragmentManager().getFragments().get(2) ;
+                contactsFragment.secondContactName.setText(organizer);
+                contactsFragment.secondContactNumber.setText(phone);
+
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    //solo se è in editMode
+    //INIZIO metodi eventi in editMode
+    private void loadEventData(String eventId){
+        loadDynamicData(eventId,editEventCity);
+        loadStaticData(eventId,editEventCity);
+        loadMapData(eventId,editEventCity);
+
+    }
+
+    private void loadProposalData(Bundle proposalBundle){
+        NewEventFirstPage firstPage = (NewEventFirstPage)getSupportFragmentManager().getFragments().get(0);
+        firstPage.eventName.setText(proposalBundle.getString("title"));
+        firstPage.eventDescription.setText(proposalBundle.getString("description"));
+    }
+
+    protected void loadDynamicData(final String eventId, String city){
+        final DatabaseReference dynamicReference =
+              FirebaseDatabase.getInstance().getReference()
+                              .child("Events").child("Dynamic").child(city).child(eventId);
+        dynamicReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                dynamicData = dataSnapshot.getValue(DynamicData.class);
+
+                //CARICAMENTO NELLA PRIMA PAGINA
+                NewEventFirstPage firstPage = (NewEventFirstPage) getSupportFragmentManager().getFragments().get(0);
+
+                String eventName = dynamicData.geteName();
+                firstPage.eventName.setText(eventName);
+
+                Boolean isFree = dynamicData.getFree();
+                Float price = dynamicData.getPrice();
+                if(!isFree){
+                    firstPage.radioRealButtonGroup.setPosition(1);
+                    firstPage.eventPrice.setVisibility(View.VISIBLE);
+                    firstPage.eventPrice.setText(""+price);
+                }
+
+                String imagePath = dynamicData.getiPath();
+                eventImageDownload = imagePath;
+                Glide.with(CreateEvent.this).load(imagePath).into(firstPage.imagePicker);
+                firstPage.imagePicker.setVisibility(View.VISIBLE);
+                //FINE CARICAMENTO PRIMA PAGINA
+
+                //CARICAMENTO SECONDA PAGINA
+                NewEventSecondPage secondPage = (NewEventSecondPage)getSupportFragmentManager().getFragments().get(1);
+                String date = UbiQuoBusinessUtils.fromMillisToStringDate(dynamicData.getDate());
+                String time = UbiQuoBusinessUtils.fromMillisToStringTime(dynamicData.getDate());
+
+                SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+                String dateString = formatter.format(new Date(dynamicData.getDate()));
+
+                String organizer = dynamicData.getpName();
+
+                secondPage.date = dateString;
+                secondPage.createDatePicker.setText("Data\n"+UbiQuoBusinessUtils.readableDate(dateString));
+                secondPage.time = time;
+                secondPage.createTimePicker.setText("Orario d'inizio\n"+time);
+                secondPage.eventOrganizer.setText(organizer);
+                //FINE CARICAMENTO SECONDA PAGINA
+
+
+            }
+
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    protected void loadStaticData(String eventId,String city){
+        DatabaseReference staticRef =
+                FirebaseDatabase.getInstance().getReference()
+                                .child("Events").child("Static").child(city).child(eventId);
+
+        staticRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                staticData = dataSnapshot.getValue(StaticData.class);
+                NewEventFirstPage firstPage = (NewEventFirstPage)getSupportFragmentManager().getFragments().get(0);
+
+                String description = staticData.getDesc();
+                firstPage.eventDescription.setText(description);
+
+                ContactsFragment contactsFragment = (ContactsFragment)getSupportFragmentManager().getFragments().get(2);
+                ArrayList<String> names = staticData.getNames();
+                ArrayList<String> numbers = staticData.getNumbers();
+                if(names.size()>=1 && !names.get(0).isEmpty() && !numbers.get(0).isEmpty()){
+                    contactsFragment.secondContactName.setText(names.get(0));
+                    contactsFragment.secondContactNumber.setText(numbers.get(0));
+                }
+
+                if(names.size()>=2 && !names.get(1).isEmpty() && !numbers.get(1).isEmpty()){
+                    contactsFragment.firstContactName.setText(names.get(1));
+                    contactsFragment.firstContactNumber.setText(numbers.get(1));
+                }
+
+                if(names.size()>=3 && !names.get(2).isEmpty() && !numbers.get(2).isEmpty()){
+                    contactsFragment.thirdContactName.setText(names.get(2));
+                    contactsFragment.thirdContactNumber.setText(numbers.get(2));
                 }
             }
 
@@ -145,5 +325,40 @@ public class CreateEvent extends AppCompatActivity {
             }
         });
     }
+
+    protected void loadMapData(String eventId,String city){
+        final DatabaseReference mapRef =
+                FirebaseDatabase.getInstance().getReference()
+                                .child("MapData").child(city).child(eventId);
+
+        mapRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                mapInfo = dataSnapshot.getValue(MapInfo.class);
+                NewEventSecondPage secondPage = (NewEventSecondPage)getSupportFragmentManager().getFragments().get(1);
+                String adress = mapInfo.getAdress();
+
+                secondPage.longitude = mapInfo.getLng();
+                secondPage.latitude = mapInfo.getLat();
+                secondPage.adress = mapInfo.getAdress();
+                secondPage.createEventAutoAdress.setText(adress);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    protected DynamicData getDynamicData(){
+        return dynamicData;
+    }
+
+    protected StaticData getStaticData(){
+        return staticData;
+    }
+
+    //FINE metodi eventi in editMode
 
 }

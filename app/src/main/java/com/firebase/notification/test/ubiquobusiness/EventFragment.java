@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -52,7 +53,7 @@ public class EventFragment extends Fragment {
         place_city = sharedPreferences.getString("PLACE_CITY","NA");
         place_id = sharedPreferences.getString("PLACE_ID","NA");
         placeName = sharedPreferences.getString("PLACE_NAME","NA");
-        eventReference = FirebaseDatabase.getInstance().getReference().child("BusinessesEvents").child(place_city).child(place_id);
+        eventReference = FirebaseDatabase.getInstance().getReference().child("BusinessesEvents").child(place_city).child(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
 
         return rootView;
@@ -68,7 +69,7 @@ public class EventFragment extends Fragment {
 
                 ValueEventListener eventListener = new ValueEventListener() {
                     @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
+                    public void onDataChange(final DataSnapshot dataSnapshot) {
                         final DynamicData eventData = dataSnapshot.getValue(DynamicData.class);
                         viewHolder.setTitle(eventData.geteName());
                         viewHolder.setDate(eventData.getDate());
@@ -82,6 +83,7 @@ public class EventFragment extends Fragment {
                                 String id = eventId;
 
                                 editEvent.putExtra("edit_string_id", id);
+                                editEvent.putExtra("edit_string_city",place_city);
                                 startActivity(editEvent);
                             }
                         });

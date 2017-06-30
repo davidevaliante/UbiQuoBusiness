@@ -6,8 +6,10 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.util.TimeUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,9 +62,10 @@ public class ContactsFragment extends Fragment {
     Unbinder unbinder;
 
     private ProgressDialog myProgressBar;
-    private String editString;
+    private String editEventId,editEventCity;
     private Bundle proposal;
     public static Map<String,String> provinces = new HashMap<>();
+    private ProgressDialog dialog;
 
 
     public ContactsFragment() {
@@ -81,8 +84,10 @@ public class ContactsFragment extends Fragment {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_contacts, container, false);
         unbinder = ButterKnife.bind(this, rootView);
 
-        editString = ((CreateEvent)getActivity()).editEventIdString;
+        editEventId = ((CreateEvent)getActivity()).editEventIdString;
+        editEventCity = ((CreateEvent) getActivity()).editEventCity;
         proposal = ((CreateEvent)getActivity()).proposal;
+
 
         //prepara Map delle province
         initProvinces();
@@ -90,23 +95,88 @@ public class ContactsFragment extends Fragment {
         confirmLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (editString == null){
-                    if (canSubmit()) {
+
+                //non in editMode e no proposal
+                if (editEventId == null && proposal==null){
+                    if(canGoNext()){
+                        dialog = UbiQuoBusinessUtils.defaultProgressBar("Caricamento in corso",getActivity());
+                        dialog.show();
+                        updateStaticData();
                         submitEvent();
                     }
-                }else{
-                    if(canEdit()){
-                        editEvent();
-                    }
+                }
+
+                if(editEventId != null){
+                    dialog = UbiQuoBusinessUtils.defaultProgressBar("Caricamento in corso",getActivity());
+                    dialog.show();
+                    updateStaticData();
+                    editEvent(editEventId,editEventCity);
+                }
+
+                if(proposal != null){
+                    //submitProposal(proposal.getString("id"));
                 }
             }
         });
 
-        if(editString != null){
-            loadContacts();
-        }
+
 
         return rootView;
+    }
+
+    private void submitEvent(){
+        String city = ((CreateEvent)getActivity()).city;
+        String organizerId = ((CreateEvent)getActivity()).organizerId;
+        String image = ((CreateEvent)getActivity()).eventImageUri;
+        String businessUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        final DatabaseReference dynamicReference = FirebaseDatabase.getInstance().getReference().child("Events").child("Dynamic").child(city);
+        final DatabaseReference staticReference = FirebaseDatabase.getInstance().getReference().child("Events").child("Static").child(city);
+        final DatabaseReference mapReference = FirebaseDatabase.getInstance().getReference().child("MapData").child(city);
+        final DatabaseReference BusinessEvents = FirebaseDatabase.getInstance().getReference().child("BusinessesEvents").child(city).child(businessUserId);
+        StorageReference imageReference = FirebaseStorage.getInstance().getReference().child("Events_Images");
+        //chiave universale di riferimento
+        final String pushId = BusinessEvents.push().getKey();
+
+        //caricamento immagine
+        Uri imageUri = Uri.parse(image);
+
+        final File compressedFile = Compressor.getDefault(getActivity()).compressToFile(new File(imageUri.getPath()));
+
+
+
+        imageReference.child(pushId).putFile(Uri.fromFile(compressedFile)).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                if(task.isSuccessful()) {
+                    BusinessEvents.child(pushId).setValue(true);
+
+
+                    DynamicData dynamicData = ((CreateEvent) getActivity()).getDynamicData();
+                    StaticData staticData = ((CreateEvent) getActivity()).getStaticData();
+                    MapInfo mapInfo = ((CreateEvent) getActivity()).mapInfo;
+                    mapInfo.setReferenceKey(pushId);
+                    dynamicData.setiPath(task.getResult().getDownloadUrl().toString());
+
+                    dynamicReference.child(pushId).setValue(dynamicData);
+                    staticReference.child(pushId).setValue(staticData);
+                    mapReference.child(pushId).setValue(mapInfo);
+                    dialog.dismiss();
+                    Toasty.success(getActivity(), "Evento aggiunto con successo", Toast.LENGTH_SHORT, true).show();
+                    getActivity().finish();
+                }else{
+                    Toasty.success(getActivity(), "Errore nel caricamento dell'evento", Toast.LENGTH_SHORT, true).show();
+
+                }
+
+            }
+
+
+        });
+
+
+
+
+
     }
 
     @Override
@@ -115,322 +185,147 @@ public class ContactsFragment extends Fragment {
         unbinder.unbind();
     }
 
-    private  Boolean canSubmit(){
-        Boolean canSubmit = true;
-        String firstName = firstContactName.getText().toString().trim();
-        String secondName = secondContactName.getText().toString().trim();
-        String thirdName = thirdContactName.getText().toString().trim();
+    private void updateStaticData(){
+        String first_name = firstContactName.getText().toString().trim();
+        String second_name = secondContactName.getText().toString().trim();
+        String third_name = thirdContactName.getText().toString().trim();
+        String first_number = firstContactNumber.getText().toString().trim();
+        String second_number = secondContactNumber.getText().toString().trim();
+        String third_number = thirdContactNumber.getText().toString().trim();
 
-        String firstContact = firstContactNumber.getText().toString().trim();
-        String secondContact = secondContactNumber.getText().toString().trim();
-        String thirdContact = thirdContactNumber.getText().toString().trim();
+        ArrayList<String> names = new ArrayList<>();
+        ArrayList<String> numbers = new ArrayList<>();
 
-
-        if(firstName.isEmpty() && secondName.isEmpty() && thirdName.isEmpty()){
-            Toasty.error(getActivity(),"Inserisci almeno un contatto", Toast.LENGTH_SHORT).show();
-            return false;
+        if(!second_name.isEmpty() && !second_number.isEmpty()){
+            names.add(second_name);
+            numbers.add(second_number);
         }
 
-        if(firstContact.isEmpty() && secondContact.isEmpty() && thirdContact.isEmpty()){
-            Toasty.error(getActivity(),"Inserisci almeno un numero", Toast.LENGTH_SHORT).show();
-            return false;
+        if(!first_name.isEmpty() && !first_number.isEmpty()){
+            names.add(first_name);
+            numbers.add(first_number);
         }
 
-        return canSubmit;
-    }
+        if(!third_name.isEmpty() && !third_number.isEmpty()){
+            names.add(third_name);
+            numbers.add(third_number);
+        }
 
-
-
-
-    private void submitEvent(){
-        //prima di tutto si stabilisce se è un evento ex novo oppure derivato da una proposta
-        final Bundle bundle = ((CreateEvent)getActivity()).proposal;
-        //progressBar
-        myProgressBar = new ProgressDialog(getActivity(),android.R.style.Theme_DeviceDefault_Light_Dialog_Alert);
-        myProgressBar.setMessage("Caricamento in corso");
-
-        myProgressBar.show();
-
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("LAST_EVENT_DATA", Context.MODE_PRIVATE);
-        String date = sharedPreferences.getString("EVENT_DATE_STRING","NA");
-        final String time = sharedPreferences.getString("EVENT_START_TIME","NA");
-        final String organizer = sharedPreferences.getString("EVENT_ORGANIZER","NA");
-        final String city = sharedPreferences.getString("EVENT_CITY","NA");
-        final String adress = sharedPreferences.getString("EVENT_ADRESS","NA");
-        final String id = sharedPreferences.getString("EVENT_ORGANIZER_ID","NA");
-
-
-        final Double latitude = UbiQuoBusinessUtils.getDoubleFromEditor(sharedPreferences,"EVENT_LATITUDE",0.0);
-        final Double longitude = UbiQuoBusinessUtils.getDoubleFromEditor(sharedPreferences,"EVENT_LONGITUDE",0.0);
-        final Long timeMillies = UbiQuoBusinessUtils.getTimeMillis(date,time);
-
-        String image = sharedPreferences.getString("EVENT_IMAGE","NA");
-        final String title = sharedPreferences.getString("EVENT_TITLE","NA");
-        final String desc = sharedPreferences.getString("EVENT_DESCRIPTION","NA");
-        final Boolean isFree = sharedPreferences.getBoolean("EVENT_IS_FREE",true);
-        final Integer price = sharedPreferences.getInt("EVENT_PRICE",0);
-
-
-        final String firstName = firstContactName.getText().toString().trim();
-        final String secondName = secondContactName.getText().toString().trim();
-        final String thirdName = thirdContactName.getText().toString().trim();
-
-        final String firstContact = firstContactNumber.getText().toString().trim();
-        final String secondContact = secondContactNumber.getText().toString().trim();
-        final String thirdContact = thirdContactNumber.getText().toString().trim();
-
-        SharedPreferences userPref = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
-        final String phone = userPref.getString("PLACE_PHONE","NA");
-        final String place_id = userPref.getString("PLACE_ID","NA");
-        final String userId = FirebaseAuth.getInstance().getCurrentUser().getUid().toString();
-
-
-        //caricamento immagine
-        Uri imageUri = Uri.parse(image);
-        String imagePath = imageUri.getLastPathSegment()+organizer;
-
-        final File compressedFile = Compressor.getDefault(getActivity()).compressToFile(new File(imageUri.getPath()));
-
-        StorageReference myReference = FirebaseStorage.getInstance().getReference().child("Event_Images").child(imagePath);
-
-        final float floatPrice = (float)price;
-
-        myReference.putFile(Uri.fromFile(compressedFile)).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                if(task.isComplete() && task.isSuccessful()){
-
-                    //non creato a partire da una proposta
-                    if(bundle == null) {
-                        //dati dinamici
-                        String downloadUrl = task.getResult().getDownloadUrl().toString();
-                        DynamicData newDinamicData = new DynamicData(0, 0, 0, 0, 0, 0, timeMillies, floatPrice, title, downloadUrl, organizer, isFree, 0);
-                        DatabaseReference pushRef = FirebaseDatabase.getInstance().getReference().child("Events").child("Dynamic").child(city).push();
-                        String pushId = pushRef.getKey();
-
-                        pushRef.setValue(newDinamicData);
-
-                        ArrayList<String> names = new ArrayList<>();
-                        ArrayList<String> numbers = new ArrayList<>();
-                        if (!phone.equalsIgnoreCase("NA")) {
-                            names.add(UbiQuoBusinessUtils.capitalize(organizer));
-                            numbers.add(phone);
-                        }
-
-                        if (!firstName.isEmpty() && !firstContact.isEmpty()) {
-                            names.add(UbiQuoBusinessUtils.capitalize(firstName));
-                            numbers.add(firstContact);
-                        }
-                        if (!secondName.isEmpty() && !secondContact.isEmpty()) {
-                            names.add(UbiQuoBusinessUtils.capitalize(secondName));
-                            numbers.add(secondContact);
-                        }
-                        if (!thirdName.isEmpty() && !thirdContact.isEmpty()) {
-                            names.add(UbiQuoBusinessUtils.capitalize(thirdName));
-                            numbers.add(thirdContact);
-                        }
-
-                        //dati statici
-                        StaticData newStaticData = new StaticData(desc, names, numbers);
-                        DatabaseReference staticRef = FirebaseDatabase.getInstance().getReference().child("Events").child("Static").child(city);
-                        staticRef.child(pushId).setValue(newStaticData);
-
-                        MapInfo newMapInfo = new MapInfo(latitude, longitude, organizer, id, title, floatPrice, phone, 0, timeMillies, adress, pushId);
-                        DatabaseReference mapReference = FirebaseDatabase.getInstance().getReference().child("MapData").child(city).child(pushId);
-                        mapReference.setValue(newMapInfo);
-
-                        FirebaseDatabase.getInstance().getReference().child("BusinessesEvents").child(city).child(userId).child(pushId).setValue(true);
-
-                        Toasty.success(getActivity(), "Evento aggiunto con successo !", Toast.LENGTH_SHORT, true).show();
-                        getActivity().getSharedPreferences("LAST_EVENT_DATA", 0).edit().clear().commit();
-                        myProgressBar.dismiss();
-                        getActivity().finish();
-
-
-                    }else{
-
-                        //creato a partire da una proposta
-                        final String proposalId = bundle.getString("id", "NA");
-                        //dati dinamici
-                        String downloadUrl = task.getResult().getDownloadUrl().toString();
-                        DynamicData newDinamicData = new DynamicData(0, 0, 0, 0, 0, 0, timeMillies, floatPrice, title, downloadUrl, organizer, isFree, 0);
-                        String pushId = proposalId;
-                        DatabaseReference pushRef = FirebaseDatabase.getInstance().getReference().child("Events").child("Dynamic").child(city).child(proposalId);
-
-
-                        pushRef.setValue(newDinamicData);
-
-                        ArrayList<String> names = new ArrayList<>();
-                        ArrayList<String> numbers = new ArrayList<>();
-                        if (!phone.equalsIgnoreCase("NA")) {
-                            names.add(UbiQuoBusinessUtils.capitalize(organizer));
-                            numbers.add(phone);
-                        }
-
-                        if (!firstName.isEmpty() && !firstContact.isEmpty()) {
-                            names.add(UbiQuoBusinessUtils.capitalize(firstName));
-                            numbers.add(firstContact);
-                        }
-                        if (!secondName.isEmpty() && !secondContact.isEmpty()) {
-                            names.add(UbiQuoBusinessUtils.capitalize(secondName));
-                            numbers.add(secondContact);
-                        }
-                        if (!thirdName.isEmpty() && !thirdContact.isEmpty()) {
-                            names.add(UbiQuoBusinessUtils.capitalize(thirdName));
-                            numbers.add(thirdContact);
-                        }
-
-                        //dati statici
-                        StaticData newStaticData = new StaticData(desc, names, numbers);
-                        DatabaseReference staticRef = FirebaseDatabase.getInstance().getReference().child("Events").child("Static").child(city);
-                        staticRef.child(pushId).setValue(newStaticData);
-
-                        MapInfo newMapInfo = new MapInfo(latitude, longitude, organizer, id, title, floatPrice, phone, 0, timeMillies, adress, pushId);
-                        DatabaseReference mapReference = FirebaseDatabase.getInstance().getReference().child("MapData").child(city).child(pushId);
-                        mapReference.setValue(newMapInfo);
-
-                        FirebaseDatabase.getInstance().getReference().child("BusinessesEvents").child(city).child(place_id).child(pushId).setValue(true);
-
-
-                        Toasty.success(getActivity(), "Evento aggiunto con successo !", Toast.LENGTH_SHORT, true).show();
-                        getActivity().getSharedPreferences("LAST_EVENT_DATA", 0).edit().clear().commit();
-                        ProposalBuiltPush pushNotification = new ProposalBuiltPush(proposalId, FirebaseAuth.getInstance().getCurrentUser().getUid(),organizer);
-                        FirebaseDatabase.getInstance().getReference().child("NotificationForProposal").child(city).child(proposalId).setValue(pushNotification);
-                        myProgressBar.dismiss();
-                        getActivity().finish();
-                    }
-                }
-                if (!task.isSuccessful()){
-                    Toasty.error(getActivity(),"C'è stato un errore durante il caricamento del nuovo evento",Toast.LENGTH_SHORT,true).show();
-                }
-            }
-        });
+        ((CreateEvent)getActivity()).getStaticData().setNames(names);
+        ((CreateEvent)getActivity()).getStaticData().setNumbers(numbers);
 
     }
 
-    private void editEvent(){
-        String event_key = editString;
-        if(!event_key.isEmpty()){
-            SharedPreferences editPreferences = getActivity().getSharedPreferences("EDIT_EVENT",Context.MODE_PRIVATE);
-            String city = editPreferences.getString("EDIT_CITY","NA");
-            DatabaseReference dynamicReference = FirebaseDatabase.getInstance().getReference().child("Events").child("Dynamic").child(city).child(event_key);
+    private Boolean canGoNext(){
+        Boolean canGoNext = true;
+        String first_name = firstContactName.getText().toString().trim();
+        String second_name = secondContactName.getText().toString().trim();
+        String third_name = thirdContactName.getText().toString().trim();
+        String first_number = firstContactNumber.getText().toString().trim();
+        String second_number = secondContactNumber.getText().toString().trim();
+        String third_number = thirdContactNumber.getText().toString().trim();
 
-            //Dati dinamici
-            Long date = editPreferences.getLong("EDIT_DATE",0);
-            Float price = editPreferences.getFloat("EDIT_PRICE",0.0f);
-            String title = editPreferences.getString("EDIT_TITLE","NA");
-            String image = editPreferences.getString("EDIT_IMAGE","NA");
-            String placeName = editPreferences.getString("EDIT_ORGANIZER","NA");
-            Boolean isFree = editPreferences.getBoolean("EDIT_ISFREE",true);
-            DynamicData newDynamicData = new DynamicData(0,0,0,0,0,0,date,price,title,image,placeName,isFree,0);
-            dynamicReference.setValue(newDynamicData).addOnCompleteListener(new OnCompleteListener<Void>() {
+        if(first_name.isEmpty() && second_name.isEmpty() & third_name.isEmpty() && first_number.isEmpty() && second_number.isEmpty() && third_number.isEmpty()){
+            Toasty.error(getActivity(),"Inserisci almeno un contatto telefonico", Toast.LENGTH_SHORT,true).show();
+            return false;
+        }
+
+        if(first_name.isEmpty() && !first_number.isEmpty()){
+            Toasty.error(getActivity(),"Inserisci il nome del secondo contatto", Toast.LENGTH_SHORT,true).show();
+            return false;
+        }
+        if(!first_name.isEmpty() && first_number.isEmpty()){
+            Toasty.error(getActivity(),"Inserisci il numero del secondo contatto", Toast.LENGTH_SHORT,true).show();
+            return false;
+        }
+
+
+
+        if(second_name.isEmpty() && !second_number.isEmpty()){
+            Toasty.error(getActivity(),"Inserisci il nome del primo contatto", Toast.LENGTH_SHORT,true).show();
+            return false;
+        }
+        if(!second_name.isEmpty() && second_number.isEmpty()){
+            Toasty.error(getActivity(),"Inserisci il numero del primo contatto", Toast.LENGTH_SHORT,true).show();
+            return false;
+        }
+
+
+
+        if(third_name.isEmpty() && !third_number.isEmpty()){
+            Toasty.error(getActivity(),"Inserisci il nome del terzo contatto", Toast.LENGTH_SHORT,true).show();
+            return false;
+        }
+        if(!third_name.isEmpty() && third_number.isEmpty()){
+            Toasty.error(getActivity(),"Inserisci il numero del terzo contatto", Toast.LENGTH_SHORT,true).show();
+            return false;
+        }
+
+        return canGoNext;
+    }
+
+    private void editEvent(String eventId,String editEventCity){
+        String city = ((CreateEvent)getActivity()).city;
+        String image = ((CreateEvent)getActivity()).eventImageUri;
+        String businessUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        final DatabaseReference dynamicReference = FirebaseDatabase.getInstance().getReference().child("Events").child("Dynamic").child(city);
+        final DatabaseReference staticReference = FirebaseDatabase.getInstance().getReference().child("Events").child("Static").child(city);
+        final DatabaseReference mapReference = FirebaseDatabase.getInstance().getReference().child("MapData").child(city);
+        final DatabaseReference BusinessEvents = FirebaseDatabase.getInstance().getReference().child("BusinessesEvents").child(city).child(businessUserId);
+        StorageReference imageReference = FirebaseStorage.getInstance().getReference().child("Events_Images");
+        //chiave universale di riferimento
+        final String pushId = eventId;
+
+
+        if(image != null) {
+            //se l'immagine è stata cambiata allora questa stringa non è null
+            Uri imageUri = Uri.parse(image);
+
+            final File compressedFile = Compressor.getDefault(getActivity()).compressToFile(new File(imageUri.getPath()));
+
+
+            imageReference.child(pushId).putFile(Uri.fromFile(compressedFile)).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                 @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    Toasty.success(getActivity(),"Success !",Toast.LENGTH_SHORT,true).show();
+                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        BusinessEvents.child(pushId).setValue(true);
+
+
+                        DynamicData dynamicData = ((CreateEvent) getActivity()).getDynamicData();
+                        StaticData staticData = ((CreateEvent) getActivity()).getStaticData();
+                        MapInfo mapInfo = ((CreateEvent) getActivity()).mapInfo;
+                        mapInfo.setReferenceKey(pushId);
+                        dynamicData.setiPath(task.getResult().getDownloadUrl().toString());
+
+                        dynamicReference.child(pushId).setValue(dynamicData);
+                        staticReference.child(pushId).setValue(staticData);
+                        mapReference.child(pushId).setValue(mapInfo);
+                        dialog.dismiss();
+                        Toasty.success(getActivity(), "Evento modificato con successo", Toast.LENGTH_SHORT, true).show();
+                        getActivity().finish();
+                    } else {
+                        Toasty.success(getActivity(), "Errore nel caricamento dell'evento", Toast.LENGTH_SHORT, true).show();
+
+                    }
+
                 }
             });
-
-            //dati statici
-            DatabaseReference staticReference = FirebaseDatabase.getInstance().getReference().child("Events").child("Static").child(city).child(event_key);
-            ArrayList<String> names = new ArrayList<>();
-            ArrayList<String> numbers = new ArrayList<>();
-            String desc = editPreferences.getString("EDIT_DESC","NA");
-
-            String name_one = editPreferences.getString("EDIT_CONTACT_1","NA");
-            String number_one = editPreferences.getString("EDIT_NUMBER_1","NA");
-
-            //switchati perchè nel layout il secondo viene prima
-            if(!name_one.equalsIgnoreCase("NA") && !number_one.equalsIgnoreCase("NA")){
-                names.add(name_one);
-                numbers.add(number_one);
-            }
-
-            String name_two = editPreferences.getString("EDIT_CONTACT_2","NA");
-            String number_two = editPreferences.getString("EDIT_NUMBER_2","NA");
-            if(!name_two.equalsIgnoreCase("NA") && !number_two.equalsIgnoreCase("NA")){
-                names.add(name_two);
-                numbers.add(number_two);
-            }
-
-            String name_three = editPreferences.getString("EDIT_CONTACT_3","NA");
-            String number_three = editPreferences.getString("EDIT_NUMBER_3","NA");
-            if(!name_three.equalsIgnoreCase("NA") && !number_three.equalsIgnoreCase("NA")){
-                names.add(name_three);
-                numbers.add(number_three);
-            }
-
-            StaticData newStaticData = new StaticData(desc,names,numbers);
-            staticReference.setValue(newStaticData);
-
-            //dati mappa
-            DatabaseReference mapReference = FirebaseDatabase.getInstance().getReference().child("MapData").child(city).child(event_key);
-
-            Double lat = UbiQuoBusinessUtils.getDoubleFromEditor(editPreferences,"EDIT_LAT",0.0);
-            Double lng = UbiQuoBusinessUtils.getDoubleFromEditor(editPreferences,"EDIT_LNG",0.0);
-            String organizer_id = editPreferences.getString("EDIT_ORGANIZER_ID","NA");
-            String phone = editPreferences.getString("EDIT_NUMBER_0","Non disponibile");
-            String adress = editPreferences.getString("EDIT_ADRESS","Non disponibile");
-            MapInfo newMapInfo = new MapInfo(lat,lng,placeName,organizer_id,title,price,phone,0,date,adress,event_key);
-            mapReference.setValue(newMapInfo);
-
         }else{
-            Toasty.error(getActivity(),"Errore del server, riprova", Toast.LENGTH_SHORT,true).show();
+            BusinessEvents.child(pushId).setValue(true);
+            DynamicData dynamicData = ((CreateEvent) getActivity()).getDynamicData();
+            StaticData staticData = ((CreateEvent) getActivity()).getStaticData();
+            MapInfo mapInfo = ((CreateEvent) getActivity()).mapInfo;
+            mapInfo.setReferenceKey(pushId);
+
+            dynamicReference.child(pushId).setValue(dynamicData);
+            staticReference.child(pushId).setValue(staticData);
+            mapReference.child(pushId).setValue(mapInfo);
+            dialog.dismiss();
+            Toasty.success(getActivity(), "Evento modificato con successo", Toast.LENGTH_SHORT, true).show();
+            getActivity().finish();
         }
     }
 
-    private Boolean canEdit(){
-        Boolean canEdit = true;
-        SharedPreferences editor = getActivity().getSharedPreferences("EDIT_EVENT",Context.MODE_PRIVATE);
-        String name_one = secondContactName.getText().toString().trim();
-        String name_two = firstContactName.getText().toString().trim();
-        String name_three = thirdContactName.getText().toString().trim();
-        String number_one = secondContactNumber.getText().toString().trim();
-        String number_two = firstContactNumber.getText().toString().trim();
-        String number_three = thirdContactNumber.getText().toString().trim();
-
-        if(!name_one.isEmpty() && !number_one.isEmpty()){
-            editor.edit().putString("EDIT_CONTACT_1",name_one).commit();
-            editor.edit().putString("EDIT_NUMBER_1",number_one).commit();
-        }
-
-        if(!name_two.isEmpty() && !number_two.isEmpty()){
-            editor.edit().putString("EDIT_CONTACT_2",name_two).commit();
-            editor.edit().putString("EDIT_NUMBER_2",number_two).commit();
-        }
-
-        if(!name_three.isEmpty() && !name_three.isEmpty()){
-            editor.edit().putString("EDIT_CONTACT_3",name_three).commit();
-            editor.edit().putString("EDIT_NUMBER_3",number_three).commit();
-        }
-
-        return canEdit;
-    }
-
-    private void loadContacts(){
-        SharedPreferences editor = getActivity().getSharedPreferences("EDIT_EVENT",Context.MODE_PRIVATE);
-        String name_one = editor.getString("EDIT_CONTACT_1","NA");
-        String number_one = editor.getString("EDIT_NUMBER_1","NA");
-
-        //switchati perchè nel layout il secondo viene prima
-        if(!name_one.equalsIgnoreCase("NA") && !number_one.equalsIgnoreCase("NA")){
-            secondContactName.setText(name_one);
-            secondContactNumber.setText(number_one);
-        }
-
-        String name_two = editor.getString("EDIT_CONTACT_2","NA");
-        String number_two = editor.getString("EDIT_NUMBER_2","NA");
-        if(!name_two.equalsIgnoreCase("NA") && !number_two.equalsIgnoreCase("NA")){
-            firstContactName.setText(name_two);
-            firstContactNumber.setText(number_two);
-        }
-
-        String name_three = editor.getString("EDIT_CONTACT_3","NA");
-        String number_three = editor.getString("EDIT_NUMBER_3","NA");
-        if(!name_three.equalsIgnoreCase("NA") && !number_three.equalsIgnoreCase("NA")){
-            thirdContactName.setText(name_three);
-            thirdContactNumber.setText(number_three);
-        }
-    }
 
     private void initProvinces() {
         provinces.put("AG", "Agrigento");

@@ -170,9 +170,9 @@ public class UbiQuoBusinessUtils {
             e.printStackTrace();
         }
 
-        Log.d("END_TIME** ","time "+endDate.getTime());
+        Log.d("END_TIME** ","time "+timeMillis);
 
-        return endDate.getTime();
+        return timeMillis;
 
 
     }

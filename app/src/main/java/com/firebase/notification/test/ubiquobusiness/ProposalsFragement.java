@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -17,6 +18,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
@@ -34,11 +36,15 @@ import com.hlab.fabrevealmenu.listeners.OnFABMenuSelectedListener;
 import com.hlab.fabrevealmenu.model.FABMenuItem;
 import com.hlab.fabrevealmenu.view.FABRevealMenu;
 
+
 import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
+import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
+import uk.co.deanwild.materialshowcaseview.MaterialShowcaseView;
+import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
 
 
 public class ProposalsFragement extends Fragment {
@@ -66,8 +72,10 @@ public class ProposalsFragement extends Fragment {
         // Required empty public constructor
     }
 
-    public static ProposalsFragement newInstance() {
+    public static ProposalsFragement newInstance(String city) {
+
         ProposalsFragement newFrag = new ProposalsFragement();
+        newFrag.current_city = city;
         return newFrag;
     }
 
@@ -80,10 +88,38 @@ public class ProposalsFragement extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_proposals_fragement, container, false);
+        unbinder = ButterKnife.bind(this, rootView);
 
         pRecyclerView = (RecyclerView) rootView.findViewById(R.id.proposalRecycler);
 
-        String current_city = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE).getString("PLACE_CITY","NA");
+        String prefCity = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE).getString("PLACE_CITY","NA");
+
+        /*if(!prefCity.equalsIgnoreCase("NA")) {
+            current_city = prefCity;
+            proposalRef = FirebaseDatabase.getInstance().getReference().child("Proposals").child(current_city);
+            proposalRef.keepSynced(true);
+
+        }else{
+
+            FirebaseDatabase.getInstance().getReference().child("Business").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    current_city = dataSnapshot.getValue(Business.class).getCity();
+                    proposalRef = FirebaseDatabase.getInstance().getReference().child("Proposals").child(current_city);
+                    proposalRef.keepSynced(true);
+
+                    SharedPreferences prefs = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
+                    prefs.edit().putString("PLACE_CITY",dataSnapshot.getValue(Business.class).getCity());
+                    prefs.edit().apply();
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }*/
+
         proposalRef = FirebaseDatabase.getInstance().getReference().child("Proposals").child(current_city);
         proposalRef.keepSynced(true);
         proposalUserLikeRef = FirebaseDatabase.getInstance().getReference().child("Likes").child("Proposals");
@@ -100,7 +136,7 @@ public class ProposalsFragement extends Fragment {
         pRecyclerView.getItemAnimator().setChangeDuration(0);
 
 
-        unbinder = ButterKnife.bind(this, rootView);
+
 
         initItems(false);
         if(fabAdd!=null && mainFab!=null){
@@ -127,6 +163,10 @@ public class ProposalsFragement extends Fragment {
 
         }
 
+
+        initializeShowCase();
+
+
         return rootView;
     }
 
@@ -139,99 +179,95 @@ public class ProposalsFragement extends Fragment {
     public void onStart() {
         super.onStart();
 
-        if (pRecyclerView.getAdapter() == null) {
+        proposalAdapter = new FirebaseRecyclerAdapter<Proposal, ProposalViewholder>(
 
-            proposalAdapter = new FirebaseRecyclerAdapter<Proposal, ProposalViewholder>(
+                Proposal.class,
+                R.layout.proposal_card_layout,
+                ProposalViewholder.class,
+                proposalRef.orderByChild("creationTime")) {
 
-                    Proposal.class,
-                    R.layout.proposal_card_layout,
-                    ProposalViewholder.class,
-                    proposalRef.orderByChild("creationTime")) {
+            @Override
+            protected void populateViewHolder(final ProposalViewholder viewHolder, final Proposal model, final int position) {
+                Long currentTime = System.currentTimeMillis();
+                final String post_key = getRef(position).getKey();
+                final String user_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-                @Override
-                protected void populateViewHolder(final ProposalViewholder viewHolder, final Proposal model, final int position) {
-                    Long currentTime = System.currentTimeMillis();
-                    final String post_key = getRef(position).getKey();
-                    final String user_id = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                viewHolder.setTheme(model.getArgument(), getActivity());
+                viewHolder.setDescription(model.getDescription());
+                viewHolder.setTitle(model.getTitle());
+                viewHolder.setPeopleInterested(model.getLikes());
+                viewHolder.setPlacesNotified(model.getPlaces());
+                viewHolder.setElapsedTime(currentTime, model.getCreationTime());
+                viewHolder.setCreatorName(model.getAnonymous(),model.getCreator());
+                viewHolder.interestButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                       /* if (processClick) {
+                            processClick = false;
+                            //metodo che legge se il like è presente oppure no e chiama un metodo agiuntivo
+                            //di conseguenza
+                            likeCheckerForLikeProcess(user_id, post_key, viewHolder.interestButton, model.getArgument());
+                        }*/
+                        final FancyAlertDialog.Builder alert = new FancyAlertDialog.Builder(getActivity())
+                                .setImageRecourse(R.drawable.ic_balloons_24)
+                                .setTextTitle("Ricorda")
+                                .setBody("Creando un nuovo evento partendo da una proposta, gli utenti interessati riceveranno una notifica di avvenuta creazione da parte tua")
+                                .setNegativeColor(R.color.colorPrimary)
+                                .setNegativeButtonText("Annulla")
+                                .setOnNegativeClicked(new FancyAlertDialog.OnNegativeClicked() {
+                                    @Override
+                                    public void OnClick(View view, Dialog dialog) {
+                                        dialog.dismiss();
+                                    }
+                                })
+                                .setPositiveButtonText("Continua")
+                                .setPositiveColor(R.color.matte_blue)
+                                .setOnPositiveClicked(new FancyAlertDialog.OnPositiveClicked() {
+                                    @Override
+                                    public void OnClick(View view, Dialog dialog) {
+                                       Intent createProposal = new Intent(getActivity(),CreateEvent.class);
+                                       createProposal.putExtra("proposal_bundle",fecthDataToCreateEvent(model,post_key));
+                                       startActivity(createProposal);
+                                        dialog.dismiss();
+                                    }
+                                })
+                             /* .setAutoHide(true)*/
+                                .build();
+                        alert.show();
 
-                    viewHolder.setTheme(model.getArgument(), getActivity());
-                    viewHolder.setDescription(model.getDescription());
-                    viewHolder.setTitle(model.getTitle());
-                    viewHolder.setPeopleInterested(model.getLikes());
-                    viewHolder.setPlacesNotified(model.getPlaces());
-                    viewHolder.setElapsedTime(currentTime, model.getCreationTime());
-                    viewHolder.interestButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                           /* if (processClick) {
-                                processClick = false;
-                                //metodo che legge se il like è presente oppure no e chiama un metodo agiuntivo
-                                //di conseguenza
-                                likeCheckerForLikeProcess(user_id, post_key, viewHolder.interestButton, model.getArgument());
-                            }*/
-                            final FancyAlertDialog.Builder alert = new FancyAlertDialog.Builder(getActivity())
-                                    .setImageRecourse(R.drawable.ic_balloons_24)
-                                    .setTextTitle("Ricorda")
-                                    .setBody("Creando un nuovo evento partendo da una proposta, gli utenti interessati riceveranno una notifica di avvenuta creazione da parte tua")
-                                    .setNegativeColor(R.color.colorPrimary)
-                                    .setNegativeButtonText("Annulla")
-                                    .setOnNegativeClicked(new FancyAlertDialog.OnNegativeClicked() {
-                                        @Override
-                                        public void OnClick(View view, Dialog dialog) {
-                                            dialog.dismiss();
-                                        }
-                                    })
-                                    .setPositiveButtonText("Continua")
-                                    .setPositiveColor(R.color.matte_blue)
-                                    .setOnPositiveClicked(new FancyAlertDialog.OnPositiveClicked() {
-                                        @Override
-                                        public void OnClick(View view, Dialog dialog) {
-                                           Intent createProposal = new Intent(getActivity(),CreateEvent.class);
-                                           createProposal.putExtra("proposal_bundle",fecthDataToCreateEvent(model,post_key));
-                                           startActivity(createProposal);
-                                            dialog.dismiss();
-                                        }
-                                    })
-                                 /* .setAutoHide(true)*/
-                                    .build();
-                            alert.show();
+                    }
+                });
 
+                //listener per capire se la proposta ha già il like oppure no
+                ValueEventListener likeProposalListener = new ValueEventListener() {
+
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (dataSnapshot.hasChild(user_id)) {
+                            viewHolder.likingTransition(model.argument, getActivity());
+                            proposalRef.removeEventListener(this);
+                        } else {
+                            viewHolder.dislikeTransition(model.argument, getActivity());
+                            proposalRef.removeEventListener(this);
                         }
-                    });
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                };
+                proposalUserLikeRef.child(post_key).addListenerForSingleValueEvent(likeProposalListener);
 
 
-                    //listener per capire se la proposta ha già il like oppure no
-                    ValueEventListener likeProposalListener = new ValueEventListener() {
-
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            if (dataSnapshot.hasChild(user_id)) {
-                                viewHolder.likingTransition(model.argument, getActivity());
-                                proposalRef.removeEventListener(this);
-                            } else {
-                                viewHolder.dislikeTransition(model.argument, getActivity());
-                                proposalRef.removeEventListener(this);
-                            }
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-
-                        }
-                    };
-                    proposalUserLikeRef.child(post_key).addListenerForSingleValueEvent(likeProposalListener);
+            }
 
 
-                }
+        };
 
 
-            };
-
-        }
         pRecyclerView.setAdapter(proposalAdapter);
-        if (rcPropState != null) {
-            pRecyclerView.getLayoutManager().onRestoreInstanceState(rcPropState);
-        }
+
 
     }
 
@@ -258,6 +294,7 @@ public class ProposalsFragement extends Fragment {
         super.onDestroy();
         pRecyclerView.setAdapter(null);
         proposalAdapter.cleanup();
+
     }
 
     //aggiunge il like e rende il pulsante nuovamente cliccabile
@@ -376,6 +413,37 @@ public class ProposalsFragement extends Fragment {
         basic_data.putString("id",postKey);
         return basic_data;
     }
+
+    private void initializeShowCase(){
+        ShowcaseConfig config = new ShowcaseConfig();
+        config.setDelay(500);
+        config.setShapePadding(12);
+        config.setMaskColor(Color.parseColor("#512DA8"));
+
+
+
+        MaterialShowcaseSequence sequence = new MaterialShowcaseSequence(getActivity());
+        sequence.setConfig(config);
+
+
+        sequence.addSequenceItem(new MaterialShowcaseView.Builder(getActivity())
+                .setTarget(mainFab)
+                .setDismissText("OK")
+                .setContentText("Qui puoi aggiungere un nuovo evento oppure una nuova proposta da proporre agli utenti di UbiQuo")
+                .setDelay(500) // optional but starting animations immediately in onCreate can make them choppy
+                .setShapePadding(80)// provide a unique ID used to ensure it is only shown once
+                .setMaskColour(Color.parseColor("#512DA8"))
+                .build());
+        sequence.addSequenceItem(((ViewGroup)((MainUserPage)getActivity()).tabLayout.getChildAt(0)).getChildAt(0),"Creando un evento da una proposta gli utenti interessati riceveranno una notifica","OK");
+        sequence.addSequenceItem(((ViewGroup)((MainUserPage)getActivity()).tabLayout.getChildAt(0)).getChildAt(1),"Puoi modificare i tuoi eventi esistenti in qualsiasi momento","OK");
+        sequence.start();
+
+
+
+
+    }
+
+
 
 
 }

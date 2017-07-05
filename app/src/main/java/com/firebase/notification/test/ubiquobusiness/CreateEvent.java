@@ -83,9 +83,7 @@ public class CreateEvent extends AppCompatActivity {
             loadEventData(editEventIdString);
         }
 
-        if(proposal != null){
-            loadProposalData(proposal);
-        }
+
 
 
 
@@ -170,7 +168,6 @@ public class CreateEvent extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 business = dataSnapshot.getValue(Business.class);
                 city = business.getCity();
-                Log.d("Size : ", ""+getSupportFragmentManager().getFragments().size());
                 NewEventSecondPage secondPage =(NewEventSecondPage) getSupportFragmentManager().getFragments().get(1);
                 String placeName =  business.getName();
                 String adress = business.getAdress();
@@ -223,11 +220,7 @@ public class CreateEvent extends AppCompatActivity {
 
     }
 
-    private void loadProposalData(Bundle proposalBundle){
-        NewEventFirstPage firstPage = (NewEventFirstPage)getSupportFragmentManager().getFragments().get(0);
-        firstPage.eventName.setText(proposalBundle.getString("title"));
-        firstPage.eventDescription.setText(proposalBundle.getString("description"));
-    }
+
 
     protected void loadDynamicData(final String eventId, String city){
         final DatabaseReference dynamicReference =

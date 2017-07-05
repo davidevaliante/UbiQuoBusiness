@@ -87,6 +87,9 @@ public class MainUserPage extends AppCompatActivity  {
         getSupportActionBar().setHomeAsUpIndicator(ContextCompat.getDrawable(this, R.drawable.vector_burger_menu_24));
 
         mAuth = FirebaseAuth.getInstance();
+
+        SharedPreferences prefs = getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
+        place_city = prefs.getString("PLACE_CITY","NA");
         List<Fragment> userPageFragments = initializeFragments();
         pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(), userPageFragments);
         viewPager.setAdapter(pagerAdapter);
@@ -173,9 +176,8 @@ public class MainUserPage extends AppCompatActivity  {
 
     private List<Fragment> initializeFragments() {
         List<Fragment> fList = new ArrayList<Fragment>();
-        fList.add(ProposalsFragement.newInstance());
+        fList.add(ProposalsFragement.newInstance(place_city));
         fList.add(EventFragment.newInstance());
-        fList.add(ProposalsFragement.newInstance());
 
 
         return fList;
@@ -183,7 +185,10 @@ public class MainUserPage extends AppCompatActivity  {
 
     private void logMeOut() {
         FirebaseAuth.getInstance().signOut();
+        Intent toMainPage = new Intent(this,MainActivity.class);
+        startActivity(toMainPage);
         finish();
+
     }
 
 

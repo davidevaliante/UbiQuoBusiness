@@ -85,6 +85,7 @@ public class NewEventFirstPage extends Fragment {
                              Bundle savedInstanceState) {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_new_event_first_page, container, false);
         unbinder = ButterKnife.bind(this, rootView);
+        proposal = ((CreateEvent)getActivity()).proposal;
 
 
         //default, oscurare questi elementi
@@ -142,8 +143,9 @@ public class NewEventFirstPage extends Fragment {
             }
         });
 
-
-
+        if(proposal != null){
+            loadProposalData(proposal);
+        }
 
 
 
@@ -277,6 +279,11 @@ public class NewEventFirstPage extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         unbinder.unbind();
+    }
+
+    private void loadProposalData(Bundle proposalBundle){
+        eventName.setText(proposalBundle.getString("title"));
+        eventDescription.setText(proposalBundle.getString("description"));
     }
 
 

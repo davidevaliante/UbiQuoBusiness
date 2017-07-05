@@ -53,8 +53,9 @@ public class EventFragment extends Fragment {
         place_city = sharedPreferences.getString("PLACE_CITY","NA");
         place_id = sharedPreferences.getString("PLACE_ID","NA");
         placeName = sharedPreferences.getString("PLACE_NAME","NA");
-        eventReference = FirebaseDatabase.getInstance().getReference().child("BusinessesEvents").child(place_city).child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-
+        if(FirebaseAuth.getInstance().getCurrentUser().getUid() !=null) {
+            eventReference = FirebaseDatabase.getInstance().getReference().child("BusinessesEvents").child(place_city).child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        }
 
         return rootView;
     }

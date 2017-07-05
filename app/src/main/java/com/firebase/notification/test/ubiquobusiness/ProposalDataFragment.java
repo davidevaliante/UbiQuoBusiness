@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,8 +20,11 @@ import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.List;
@@ -263,21 +267,45 @@ public class ProposalDataFragment extends Fragment {
 
     private void submitProposal(){
         SharedPreferences userPref = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
-        String creatorName = userPref.getString("PLACE_NAME","Non disponibile");
 
-        SharedPreferences proposalPref = getActivity().getSharedPreferences("NEWPROPOSAL_PREF", Context.MODE_PRIVATE);
-        String title = proposalPref.getString("PROP_TITLE","NA");
-        String description = proposalPref.getString("PROP_DESC","NA");
-        Boolean isAnon = proposalPref.getBoolean("PROP_ISANON",true);
-        String city = proposalPref.getString("PROP_CITY","NA");
-        String argument = proposalPref.getString("PROP_ARG","party");
-        Long currentTime = System.currentTimeMillis();
+        final String creatorId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        DatabaseReference newPropRef = FirebaseDatabase.getInstance().getReference().child("Proposals").child(city);
-        Proposal proposal = new Proposal(title,"",description,argument,creatorName,0,currentTime,city,isAnon, FirebaseAuth.getInstance().getCurrentUser().getUid());
-        newPropRef.push().setValue(proposal);
-        proposalPref.edit().clear().commit();
-        getActivity().finish();
+        final SharedPreferences proposalPref = getActivity().getSharedPreferences("NEWPROPOSAL_PREF", Context.MODE_PRIVATE);
+        final String title = proposalPref.getString("PROP_TITLE","NA");
+        final String description = proposalPref.getString("PROP_DESC","NA");
+        final Boolean isAnon = proposalPref.getBoolean("PROP_ISANON",true);
+        final String city = proposalPref.getString("PROP_CITY","NA");
+        final String argument = proposalPref.getString("PROP_ARG","party");
+        final Long currentTime = System.currentTimeMillis();
+
+        if(isAnon==false){
+             DatabaseReference businessRef =  FirebaseDatabase.getInstance().getReference().child("Business").child(creatorId);
+
+            businessRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Business business = dataSnapshot.getValue(Business.class);
+                    String creatorName = business.getName();
+                    DatabaseReference newPropRef = FirebaseDatabase.getInstance().getReference().child("Proposals").child(city);
+                    Proposal proposal = new Proposal(title,"",description,argument,creatorName,0,currentTime,city,isAnon, creatorId);
+                    newPropRef.push().setValue(proposal);
+                    proposalPref.edit().clear().commit();
+                    getActivity().finish();
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        }else {
+            String creatorName = "Non disponibile";
+            DatabaseReference newPropRef = FirebaseDatabase.getInstance().getReference().child("Proposals").child(city);
+            Proposal proposal = new Proposal(title, "", description, argument, creatorName, 0, currentTime, city, isAnon, FirebaseAuth.getInstance().getCurrentUser().getUid());
+            newPropRef.push().setValue(proposal);
+            proposalPref.edit().clear().commit();
+            getActivity().finish();
+        }
     }
 
 

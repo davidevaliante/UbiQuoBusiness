@@ -171,7 +171,6 @@ public class NewEventSecondPage extends Fragment {
                     Log.d("Adress : ", adress);
                     Log.d("Time : ",""+ UbiQuoBusinessUtils.getTimeMillis(date,time));
                     Log.d("Organizer : ", ((CreateEvent)getActivity()).organizer);
-                    Log.d("OrganizerId : ", ((CreateEvent)getActivity()).organizerId);
                     ((CreateEvent)getActivity()).getDynamicData().setDate(UbiQuoBusinessUtils.getTimeMillis(date,time));
                     ((CreateEvent)getActivity()).newEvenViewPager.setCurrentItem(2,true);
                 }

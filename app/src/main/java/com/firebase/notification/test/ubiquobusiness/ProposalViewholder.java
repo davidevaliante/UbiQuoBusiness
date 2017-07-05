@@ -19,7 +19,7 @@ public class ProposalViewholder extends RecyclerView.ViewHolder {
 
     View mView;
     ImageView argumentIcon;
-    TextView title,description,elapsedTime, peopleInterested, placesNotified;
+    TextView title,description,elapsedTime, peopleInterested, placesNotified,creatorName;
     public RelativeLayout interestButton;
     ImageButton proposalOptions;
     String default_argument;
@@ -39,9 +39,7 @@ public class ProposalViewholder extends RecyclerView.ViewHolder {
         interestButton = (RelativeLayout)mView.findViewById(R.id.interestButton);
         proposalOptions = (ImageButton)mView.findViewById(R.id.proposalOptions);
         buttonInterest = (TextView) mView.findViewById(R.id.buttonInterest);
-
-
-
+        creatorName = (TextView)mView.findViewById(R.id.creatorName);
     }
 
 
@@ -80,26 +78,31 @@ public class ProposalViewholder extends RecyclerView.ViewHolder {
             case "cocktail":
                 peopleInterested.setTextColor(ContextCompat.getColor(ctx,R.color.cocktail_green));
                 interestButton.setBackgroundColor(ContextCompat.getColor(ctx,R.color.cocktail_green));
+                creatorName.setBackgroundColor(ContextCompat.getColor(ctx,R.color.cocktail_green));
                 break;
 
             case "dance":
                 peopleInterested.setTextColor(ContextCompat.getColor(ctx,R.color.dance_red));
                 interestButton.setBackgroundColor(ContextCompat.getColor(ctx,R.color.dance_red));
+                creatorName.setBackgroundColor(ContextCompat.getColor(ctx,R.color.dance_red));
                 break;
 
             case "music":
                 peopleInterested.setTextColor(ContextCompat.getColor(ctx,R.color.music_blue));
                 interestButton.setBackgroundColor(ContextCompat.getColor(ctx,R.color.music_blue));
+                creatorName.setBackgroundColor(ContextCompat.getColor(ctx,R.color.music_blue));
                 break;
 
             case "party":
                 peopleInterested.setTextColor(ContextCompat.getColor(ctx,R.color.party_orange));
                 interestButton.setBackgroundColor(ContextCompat.getColor(ctx,R.color.party_orange));
+                creatorName.setBackgroundColor(ContextCompat.getColor(ctx,R.color.party_orange));
                 break;
 
             case "themed":
                 peopleInterested.setTextColor(ContextCompat.getColor(ctx,R.color.themed_purple));
                 interestButton.setBackgroundColor(ContextCompat.getColor(ctx,R.color.themed_purple));
+                creatorName.setBackgroundColor(ContextCompat.getColor(ctx,R.color.themed_purple));
                 break;
         }
     }
@@ -232,5 +235,14 @@ public class ProposalViewholder extends RecyclerView.ViewHolder {
 
         }
 
+    }
+
+    public void setCreatorName(Boolean isAnon,String name){
+        if(!isAnon){
+            creatorName.setVisibility(View.VISIBLE);
+            creatorName.setText("#"+name);
+        }else{
+            creatorName.setVisibility(View.GONE);
+        }
     }
 }

@@ -114,7 +114,10 @@ public class ContactsFragment extends Fragment {
                 }
 
                 if(proposal != null){
-                    //submitProposal(proposal.getString("id"));
+                    dialog = UbiQuoBusinessUtils.defaultProgressBar("Caricamento in corso",getActivity());
+                    dialog.show();
+                    updateStaticData();
+                    submitProposal(proposal.getString("id"));
                 }
             }
         });
@@ -176,6 +179,127 @@ public class ContactsFragment extends Fragment {
 
 
 
+
+    }
+
+    private void editEvent(String eventId,String editEventCity){
+        String city = ((CreateEvent)getActivity()).city;
+        String image = ((CreateEvent)getActivity()).eventImageUri;
+        String businessUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        final DatabaseReference dynamicReference = FirebaseDatabase.getInstance().getReference().child("Events").child("Dynamic").child(city);
+        final DatabaseReference staticReference = FirebaseDatabase.getInstance().getReference().child("Events").child("Static").child(city);
+        final DatabaseReference mapReference = FirebaseDatabase.getInstance().getReference().child("MapData").child(city);
+        final DatabaseReference BusinessEvents = FirebaseDatabase.getInstance().getReference().child("BusinessesEvents").child(city).child(businessUserId);
+        StorageReference imageReference = FirebaseStorage.getInstance().getReference().child("Events_Images");
+        //chiave universale di riferimento
+        final String pushId = eventId;
+
+        //se l'immagine è stata cambiata allora questa stringa non è null
+        if(image != null) {
+            Uri imageUri = Uri.parse(image);
+            final File compressedFile = Compressor.getDefault(getActivity()).compressToFile(new File(imageUri.getPath()));
+
+
+            imageReference.child(pushId).putFile(Uri.fromFile(compressedFile)).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        BusinessEvents.child(pushId).setValue(true);
+
+
+                        DynamicData dynamicData = ((CreateEvent) getActivity()).getDynamicData();
+                        StaticData staticData = ((CreateEvent) getActivity()).getStaticData();
+                        MapInfo mapInfo = ((CreateEvent) getActivity()).mapInfo;
+                        mapInfo.setReferenceKey(pushId);
+                        dynamicData.setiPath(task.getResult().getDownloadUrl().toString());
+
+                        dynamicReference.child(pushId).setValue(dynamicData);
+                        staticReference.child(pushId).setValue(staticData);
+                        mapReference.child(pushId).setValue(mapInfo);
+                        dialog.dismiss();
+                        Toasty.success(getActivity(), "Evento modificato con successo", Toast.LENGTH_SHORT, true).show();
+                        getActivity().finish();
+                    } else {
+                        Toasty.success(getActivity(), "Errore nel caricamento dell'evento", Toast.LENGTH_SHORT, true).show();
+
+                    }
+
+                }
+            });
+        }else{
+            BusinessEvents.child(pushId).setValue(true);
+            DynamicData dynamicData = ((CreateEvent) getActivity()).getDynamicData();
+            StaticData staticData = ((CreateEvent) getActivity()).getStaticData();
+            MapInfo mapInfo = ((CreateEvent) getActivity()).mapInfo;
+            mapInfo.setReferenceKey(pushId);
+
+            dynamicReference.child(pushId).setValue(dynamicData);
+            staticReference.child(pushId).setValue(staticData);
+            mapReference.child(pushId).setValue(mapInfo);
+            dialog.dismiss();
+            Toasty.success(getActivity(), "Evento modificato con successo", Toast.LENGTH_SHORT, true).show();
+            getActivity().finish();
+        }
+    }
+
+    private void submitProposal(String proposalId){
+        String city = ((CreateEvent)getActivity()).proposal.getString("city");
+        final String organizerId = ((CreateEvent)getActivity()).organizerId;
+        String image = ((CreateEvent)getActivity()).eventImageUri;
+        final String organizerName = ((CreateEvent)getActivity()).business.getName();
+        final String businessUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        final DatabaseReference dynamicReference = FirebaseDatabase.getInstance().getReference().child("Events").child("Dynamic").child(city);
+        final DatabaseReference staticReference = FirebaseDatabase.getInstance().getReference().child("Events").child("Static").child(city);
+        final DatabaseReference mapReference = FirebaseDatabase.getInstance().getReference().child("MapData").child(city);
+        final DatabaseReference BusinessEvents = FirebaseDatabase.getInstance().getReference().child("BusinessesEvents").child(city).child(businessUserId);
+
+        StorageReference imageReference = FirebaseStorage.getInstance().getReference().child("Events_Images");
+        //chiave universale di riferimento
+        final String pushId = proposalId;
+
+        //reference per la push notification
+        final DatabaseReference pushNotificationForProposal =
+        FirebaseDatabase.getInstance().getReference().child("NotificationForProposal").child(city).child(pushId);
+        final DatabaseReference proposalRef = FirebaseDatabase.getInstance().getReference().child("Proposals").child(city).child(proposalId);
+        //caricamento immagine
+        Uri imageUri = Uri.parse(image);
+
+        final File compressedFile = Compressor.getDefault(getActivity()).compressToFile(new File(imageUri.getPath()));
+
+
+
+        imageReference.child(pushId).putFile(Uri.fromFile(compressedFile)).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                if(task.isSuccessful()) {
+                    BusinessEvents.child(pushId).setValue(true);
+
+
+                    DynamicData dynamicData = ((CreateEvent) getActivity()).getDynamicData();
+                    StaticData staticData = ((CreateEvent) getActivity()).getStaticData();
+                    MapInfo mapInfo = ((CreateEvent) getActivity()).mapInfo;
+                    ProposalBuiltPush newPushNotification = new ProposalBuiltPush(pushId,businessUserId,organizerName);
+                    mapInfo.setReferenceKey(pushId);
+                    dynamicData.setiPath(task.getResult().getDownloadUrl().toString());
+
+                    dynamicReference.child(pushId).setValue(dynamicData);
+                    staticReference.child(pushId).setValue(staticData);
+                    mapReference.child(pushId).setValue(mapInfo);
+                    pushNotificationForProposal.setValue(newPushNotification);
+                    proposalRef.removeValue();
+                    //rimuove dalle proposal
+                    dialog.dismiss();
+                    Toasty.success(getActivity(), "Evento aggiunto con successo", Toast.LENGTH_SHORT, true).show();
+                    getActivity().finish();
+                }else{
+                    Toasty.success(getActivity(), "Errore nel caricamento dell'evento", Toast.LENGTH_SHORT, true).show();
+
+                }
+
+            }
+
+
+        });
 
     }
 
@@ -264,67 +388,6 @@ public class ContactsFragment extends Fragment {
         return canGoNext;
     }
 
-    private void editEvent(String eventId,String editEventCity){
-        String city = ((CreateEvent)getActivity()).city;
-        String image = ((CreateEvent)getActivity()).eventImageUri;
-        String businessUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        final DatabaseReference dynamicReference = FirebaseDatabase.getInstance().getReference().child("Events").child("Dynamic").child(city);
-        final DatabaseReference staticReference = FirebaseDatabase.getInstance().getReference().child("Events").child("Static").child(city);
-        final DatabaseReference mapReference = FirebaseDatabase.getInstance().getReference().child("MapData").child(city);
-        final DatabaseReference BusinessEvents = FirebaseDatabase.getInstance().getReference().child("BusinessesEvents").child(city).child(businessUserId);
-        StorageReference imageReference = FirebaseStorage.getInstance().getReference().child("Events_Images");
-        //chiave universale di riferimento
-        final String pushId = eventId;
-
-
-        if(image != null) {
-            //se l'immagine è stata cambiata allora questa stringa non è null
-            Uri imageUri = Uri.parse(image);
-
-            final File compressedFile = Compressor.getDefault(getActivity()).compressToFile(new File(imageUri.getPath()));
-
-
-            imageReference.child(pushId).putFile(Uri.fromFile(compressedFile)).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                    if (task.isSuccessful()) {
-                        BusinessEvents.child(pushId).setValue(true);
-
-
-                        DynamicData dynamicData = ((CreateEvent) getActivity()).getDynamicData();
-                        StaticData staticData = ((CreateEvent) getActivity()).getStaticData();
-                        MapInfo mapInfo = ((CreateEvent) getActivity()).mapInfo;
-                        mapInfo.setReferenceKey(pushId);
-                        dynamicData.setiPath(task.getResult().getDownloadUrl().toString());
-
-                        dynamicReference.child(pushId).setValue(dynamicData);
-                        staticReference.child(pushId).setValue(staticData);
-                        mapReference.child(pushId).setValue(mapInfo);
-                        dialog.dismiss();
-                        Toasty.success(getActivity(), "Evento modificato con successo", Toast.LENGTH_SHORT, true).show();
-                        getActivity().finish();
-                    } else {
-                        Toasty.success(getActivity(), "Errore nel caricamento dell'evento", Toast.LENGTH_SHORT, true).show();
-
-                    }
-
-                }
-            });
-        }else{
-            BusinessEvents.child(pushId).setValue(true);
-            DynamicData dynamicData = ((CreateEvent) getActivity()).getDynamicData();
-            StaticData staticData = ((CreateEvent) getActivity()).getStaticData();
-            MapInfo mapInfo = ((CreateEvent) getActivity()).mapInfo;
-            mapInfo.setReferenceKey(pushId);
-
-            dynamicReference.child(pushId).setValue(dynamicData);
-            staticReference.child(pushId).setValue(staticData);
-            mapReference.child(pushId).setValue(mapInfo);
-            dialog.dismiss();
-            Toasty.success(getActivity(), "Evento modificato con successo", Toast.LENGTH_SHORT, true).show();
-            getActivity().finish();
-        }
-    }
 
 
     private void initProvinces() {

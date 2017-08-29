@@ -94,7 +94,7 @@ public class ProposalsFragement extends Fragment {
 
         String prefCity = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE).getString("PLACE_CITY","NA");
 
-        /*if(!prefCity.equalsIgnoreCase("NA")) {
+        if(!prefCity.equalsIgnoreCase("NA")) {
             current_city = prefCity;
             proposalRef = FirebaseDatabase.getInstance().getReference().child("Proposals").child(current_city);
             proposalRef.keepSynced(true);
@@ -118,7 +118,7 @@ public class ProposalsFragement extends Fragment {
 
                 }
             });
-        }*/
+        }
 
         proposalRef = FirebaseDatabase.getInstance().getReference().child("Proposals").child(current_city);
         proposalRef.keepSynced(true);
@@ -164,7 +164,7 @@ public class ProposalsFragement extends Fragment {
         }
 
 
-        initializeShowCase();
+        //initializeShowCase();
 
 
         return rootView;
@@ -417,6 +417,7 @@ public class ProposalsFragement extends Fragment {
     private void initializeShowCase(){
         ShowcaseConfig config = new ShowcaseConfig();
         config.setDelay(500);
+
         config.setShapePadding(12);
         config.setMaskColor(Color.parseColor("#512DA8"));
 
@@ -424,6 +425,7 @@ public class ProposalsFragement extends Fragment {
 
         MaterialShowcaseSequence sequence = new MaterialShowcaseSequence(getActivity());
         sequence.setConfig(config);
+        sequence.singleUse("single_use");
 
 
         sequence.addSequenceItem(new MaterialShowcaseView.Builder(getActivity())

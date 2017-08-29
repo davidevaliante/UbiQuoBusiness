@@ -3,11 +3,13 @@ package com.firebase.notification.test.ubiquobusiness;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.provider.ContactsContract;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -15,8 +17,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -37,7 +41,7 @@ public class CreateEvent extends AppCompatActivity {
 
     @BindView(R.id.newEvenViewPager)
     CustomViewPager newEvenViewPager;
-    public PagerAdapter adapter;
+    public ScreenSlidePagerAdapter adapter;
     protected Bundle proposal;
     protected String editEventIdString;
     protected String editEventCity;
@@ -106,7 +110,7 @@ public class CreateEvent extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            return this.registrationFragments.get(position);
+            return registrationFragments.get(position);
         }
 
         @Override
@@ -140,7 +144,7 @@ public class CreateEvent extends AppCompatActivity {
         if (newEvenViewPager.getCurrentItem() == 0) {
             // If the user is currently looking at the first step, allow the system to handle the
             // Back button. This calls finish() on this activity and pops the back stack.
-           NewEventFirstPage firstPage = (NewEventFirstPage)getSupportFragmentManager().getFragments().get(0);
+           NewEventFirstPage firstPage = (NewEventFirstPage)adapter.getItem(0);
             if(editEventIdString == null && proposal == null){
                 //firstPage.saveData();
             }
@@ -168,7 +172,7 @@ public class CreateEvent extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 business = dataSnapshot.getValue(Business.class);
                 city = business.getCity();
-                NewEventSecondPage secondPage =(NewEventSecondPage) getSupportFragmentManager().getFragments().get(1);
+                NewEventSecondPage secondPage = (NewEventSecondPage) adapter.getItem(1);
                 String placeName =  business.getName();
                 String adress = business.getAdress();
                 String city = business.getCity();
@@ -190,14 +194,16 @@ public class CreateEvent extends AppCompatActivity {
                 mapInfo.setId(id);
                 mapInfo.setPhone(phone);
                 secondPage.eventOrganizer.setText(placeName);
-                secondPage.createEventAutoCity.setText(city);
-                secondPage.createEventAutoAdress.setText(adress);
+                SupportPlaceAutocompleteFragment autoCity = (SupportPlaceAutocompleteFragment) secondPage.getChildFragmentManager().findFragmentById(R.id.createEventAutoCity);
+                SupportPlaceAutocompleteFragment autoAdress = (SupportPlaceAutocompleteFragment)secondPage.getChildFragmentManager().findFragmentById(R.id.createEventAutoAdress);
+                autoCity.setText(city);
+                autoAdress.setText(adress);
                 organizer = business.getName();
                 organizerId = business.getId();
                 mapInfo.setpName(business.getName());
                 dynamicData.setpName(business.getName());
 
-                ContactsFragment contactsFragment = (ContactsFragment)getSupportFragmentManager().getFragments().get(2) ;
+                ContactsFragment contactsFragment = (ContactsFragment)adapter.getItem(2) ;
                 contactsFragment.secondContactName.setText(organizer);
                 contactsFragment.secondContactNumber.setText(phone);
 
@@ -232,7 +238,7 @@ public class CreateEvent extends AppCompatActivity {
                 dynamicData = dataSnapshot.getValue(DynamicData.class);
 
                 //CARICAMENTO NELLA PRIMA PAGINA
-                NewEventFirstPage firstPage = (NewEventFirstPage) getSupportFragmentManager().getFragments().get(0);
+                NewEventFirstPage firstPage = (NewEventFirstPage) adapter.getItem(0);
 
                 String eventName = dynamicData.geteName();
                 firstPage.eventName.setText(eventName);
@@ -252,7 +258,7 @@ public class CreateEvent extends AppCompatActivity {
                 //FINE CARICAMENTO PRIMA PAGINA
 
                 //CARICAMENTO SECONDA PAGINA
-                NewEventSecondPage secondPage = (NewEventSecondPage)getSupportFragmentManager().getFragments().get(1);
+                NewEventSecondPage secondPage = (NewEventSecondPage)adapter.getItem(1);
                 String date = UbiQuoBusinessUtils.fromMillisToStringDate(dynamicData.getDate());
                 String time = UbiQuoBusinessUtils.fromMillisToStringTime(dynamicData.getDate());
 
@@ -288,12 +294,12 @@ public class CreateEvent extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 staticData = dataSnapshot.getValue(StaticData.class);
-                NewEventFirstPage firstPage = (NewEventFirstPage)getSupportFragmentManager().getFragments().get(0);
+                NewEventFirstPage firstPage = (NewEventFirstPage)adapter.getItem(0);
 
                 String description = staticData.getDesc();
                 firstPage.eventDescription.setText(description);
 
-                ContactsFragment contactsFragment = (ContactsFragment)getSupportFragmentManager().getFragments().get(2);
+                ContactsFragment contactsFragment = (ContactsFragment)adapter.getItem(2);
                 ArrayList<String> names = staticData.getNames();
                 ArrayList<String> numbers = staticData.getNumbers();
                 if(names.size()>=1 && !names.get(0).isEmpty() && !numbers.get(0).isEmpty()){
@@ -328,7 +334,7 @@ public class CreateEvent extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 mapInfo = dataSnapshot.getValue(MapInfo.class);
-                NewEventSecondPage secondPage = (NewEventSecondPage)getSupportFragmentManager().getFragments().get(1);
+                NewEventSecondPage secondPage = (NewEventSecondPage)adapter.getItem(1);
                 String adress = mapInfo.getAdress();
 
                 secondPage.longitude = mapInfo.getLng();

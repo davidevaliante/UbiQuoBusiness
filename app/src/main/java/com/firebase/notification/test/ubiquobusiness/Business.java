@@ -8,14 +8,14 @@ package com.firebase.notification.test.ubiquobusiness;
 
 public class Business {
 
-    String contacts, phones, id;
-    String name,adress,number,city,image;
-    Double latitude,longitude;
-    Integer rating,likes;
-    String openingTime, closingTime;
-    String arguments;
-    String token;
-    Long iscrizione;
+    public String contacts, phones, id;
+    public String name,adress,number,city,image;
+    public Double latitude,longitude;
+    public Integer rating,likes;
+    public String openingTime, closingTime;
+    public String arguments;
+    public String token;
+    public Long iscrizione;
 
 
     public Business(){

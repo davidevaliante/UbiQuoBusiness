@@ -49,8 +49,7 @@
         <activity
             android:name=".CreateProposal"
             android:screenOrientation="portrait" />
-        <activity android:name=".EventPage" />
-        <activity android:name=".EditEvent"></activity>
+        <activity android:name=".Munnezza"></activity>
     </application>
 
 </manifest>

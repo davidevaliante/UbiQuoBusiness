@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -16,6 +17,7 @@ import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -24,6 +26,8 @@ import android.view.WindowManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -75,8 +79,26 @@ public class MainUserPage extends AppCompatActivity  {
 
         /*FirebaseAuth.getInstance().signOut();
         finish();
+
+
 */
 
+        /*if(FirebaseAuth.getInstance().getCurrentUser() != null){
+            FirebaseAuth.getInstance().getCurrentUser().delete().addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    String taskeroni = task.getResult().toString();
+                    Log.d("DELETE_TASK : ",taskeroni);
+                    Intent back = new Intent(MainUserPage.this,MainActivity.class);
+                    startActivity(back);
+                }
+            });
+
+
+        }else{
+            Log.d("Logged : ",FirebaseAuth.getInstance().getCurrentUser().getUid().toString());
+        }
+*/
        /* FirebaseAuth.getInstance().signOut();
         finish();*/
         final Typeface tf = Typeface.createFromAsset(MainUserPage.this.getAssets(), "fonts/Hero.otf");
@@ -198,8 +220,7 @@ public class MainUserPage extends AppCompatActivity  {
         FABRevealMenu fabAdd = (FABRevealMenu) frag.getView().findViewById(R.id.fabAdd);
         if (fabAdd.isShowing())
             fabAdd.closeMenu();
-        else
-            super.onBackPressed();
+
     }
 
     @Override
@@ -297,4 +318,6 @@ public class MainUserPage extends AppCompatActivity  {
             }
         });
     }
+
+
 }

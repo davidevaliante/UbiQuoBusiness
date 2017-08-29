@@ -4,9 +4,9 @@ import java.util.ArrayList;
 
 public class StaticData {
 
-    private ArrayList<String> names;
-    private ArrayList<String> numbers;
-    private String desc;
+    public ArrayList<String> names;
+    public ArrayList<String> numbers;
+    public String desc;
 
 
     public StaticData(){

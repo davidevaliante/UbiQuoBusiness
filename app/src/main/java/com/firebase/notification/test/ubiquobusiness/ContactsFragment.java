@@ -19,6 +19,8 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -268,19 +270,18 @@ public class ContactsFragment extends Fragment {
 
 
 
-        imageReference.child(pushId).putFile(Uri.fromFile(compressedFile)).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+        imageReference.child(pushId).putFile(Uri.fromFile(compressedFile)).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
-            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
-                if(task.isSuccessful()) {
-                    BusinessEvents.child(pushId).setValue(true);
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
+                    BusinessEvents.child(pushId).setValue(true);
 
                     DynamicData dynamicData = ((CreateEvent) getActivity()).getDynamicData();
                     StaticData staticData = ((CreateEvent) getActivity()).getStaticData();
                     MapInfo mapInfo = ((CreateEvent) getActivity()).mapInfo;
                     ProposalBuiltPush newPushNotification = new ProposalBuiltPush(pushId,businessUserId,organizerName);
                     mapInfo.setReferenceKey(pushId);
-                    dynamicData.setiPath(task.getResult().getDownloadUrl().toString());
+                    dynamicData.setiPath(taskSnapshot.getDownloadUrl().toString());
 
                     dynamicReference.child(pushId).setValue(dynamicData);
                     staticReference.child(pushId).setValue(staticData);
@@ -291,15 +292,17 @@ public class ContactsFragment extends Fragment {
                     dialog.dismiss();
                     Toasty.success(getActivity(), "Evento aggiunto con successo", Toast.LENGTH_SHORT, true).show();
                     getActivity().finish();
-                }else{
-                    Toasty.success(getActivity(), "Errore nel caricamento dell'evento", Toast.LENGTH_SHORT, true).show();
-
-                }
 
             }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+            Toasty.success(getActivity(), "Errore nel caricamento dell'evento", Toast.LENGTH_SHORT, true).show();
 
-
+        }
         });
+
+
 
     }
 

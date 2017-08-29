@@ -38,6 +38,7 @@ public class UbiQuoBusinessUtils {
 
     }
 
+
     public static void changeStatusBarColor(Integer color, Activity activity){
         if (android.os.Build.VERSION.SDK_INT >= 21) {
             Window window = activity.getWindow();

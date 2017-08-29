@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -18,16 +19,30 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.mikhaellopez.circularimageview.CircularImageView;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog;
 
+import java.io.File;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import es.dmoral.toasty.Toasty;
+import id.zelory.compressor.Compressor;
 
 import static android.app.Activity.RESULT_OK;
 
@@ -50,6 +65,9 @@ public class OpeningClosing extends Fragment {
     CircularImageView avatar;
     Unbinder unbinder;
     private final static int GALLERY_REQUEST_CODE = 0;
+    DatabaseReference placeHolderRef;
+    protected Uri croppedPic;
+    protected String id;
 
     public OpeningClosing() {
         // Required empty public constructor
@@ -71,6 +89,8 @@ public class OpeningClosing extends Fragment {
 
 
 
+
+
         //rimuove avatar fino a quando non viene scelto dalla galleria
         avatar.setVisibility(View.GONE);
 
@@ -80,9 +100,10 @@ public class OpeningClosing extends Fragment {
                 TimePickerDialog timePickerDialog = new TimePickerDialog().newInstance(new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePickerDialog view, int hourOfDay, int minute, int second) {
-                        String opening = UbiQuoBusinessUtils.hourFormatter(hourOfDay,minute);
+                        final String opening = UbiQuoBusinessUtils.hourFormatter(hourOfDay,minute);
                         openingTime.setText("Apertura\n"+opening);
                         ((Registration)getActivity()).newBusiness.setOpeningTime(opening);
+
 
 
                     }
@@ -125,11 +146,12 @@ public class OpeningClosing extends Fragment {
             public void onClick(View v) {
                 if(canGoNext()){
                     ((Registration) getActivity()).registrationViewPager.setCurrentItem(2, true);
+
                 }
             }
         });
 
-        loadImageIfAvaible();
+        //loadImageIfAvaible();
 
         return rootView;
     }
@@ -171,8 +193,10 @@ public class OpeningClosing extends Fragment {
             if (resultCode == RESULT_OK) {
                 avatar.setVisibility(View.VISIBLE);
                 avatar.setImageURI(result.getUri());
+                croppedPic = result.getUri();
                 SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
-                sharedPreferences.edit().putString("PLACE_AVATAR",result.getUri().toString()).commit();
+                sharedPreferences.edit().putString("PLACE_AVATAR",result.getUri().toString()).apply();
+
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
                 Exception error = result.getError();
             }
@@ -208,5 +232,9 @@ public class OpeningClosing extends Fragment {
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
 
+    }
 }

@@ -1,0 +1,163 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="300dp"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.firebase.notification.test.ubiquobusiness.TypePickerDialog"
+    android:layout_gravity="center">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/typePickerDescription"
+                android:padding="16dp"
+                android:gravity="center"
+                android:background="@color/matte_blue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Che tipo di account vuoi registrare ?" />
+            <RelativeLayout
+                android:paddingTop="16dp"
+                android:id="@+id/organizerButton"
+                android:layout_below="@+id/typePickerDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:id="@+id/organizerText"
+                    android:textColor="@color/blackish"
+                    android:text="Organizzatore"
+                    android:padding="16dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <ImageView
+                    app:srcCompat="@drawable/map_pin_blackish_24"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_toEndOf="@+id/organizerText"
+                    android:layout_marginTop="11dp" />
+
+                <TextView
+                    android:id="@+id/organizerTextList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/organizerText"
+                    android:paddingBottom="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingLeft="16dp"
+                    android:text="Ad esempio discoteche, pub, lounge bar"
+                    android:textColor="@color/light_grey"
+                    android:textSize="12dp" />
+
+
+                <View
+                    android:layout_marginTop="16dp"
+                    android:id="@+id/type_separator_two"
+                    android:layout_below="@id/organizerTextList"
+                    android:background="@drawable/main_gradient"
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"/>
+
+            </RelativeLayout>
+
+
+            <RelativeLayout
+                android:paddingTop="16dp"
+                android:layout_below="@+id/organizerButton"
+                android:id="@+id/employeeButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/employeeText"
+                    android:textColor="@color/blackish"
+                    android:text="Personale"
+                    android:padding="16dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <ImageView
+                    app:srcCompat="@drawable/employee_blackish_24"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_toEndOf="@+id/employeeText"
+                    android:layout_marginTop="11dp" />
+
+                <TextView
+                    android:id="@+id/employeeTextList"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/employeeText"
+                    android:paddingBottom="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingLeft="16dp"
+                    android:text="Ad esempio barman, cameriere, sicurezza"
+                    android:textColor="@color/light_grey"
+                    android:textSize="12dp" />
+
+
+                <View
+                    android:layout_marginTop="16dp"
+                    android:id="@+id/type_separator_three"
+                    android:layout_below="@id/employeeTextList"
+                    android:background="@drawable/main_gradient"
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"/>
+
+
+            </RelativeLayout>
+
+
+
+        <RelativeLayout
+            android:paddingTop="16dp"
+            android:layout_below="@+id/employeeButton"
+            android:id="@+id/performerButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/performerText"
+                android:textColor="@color/blackish"
+                android:text="Artista o Performer"
+                android:padding="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <ImageView
+                app:srcCompat="@drawable/band_blackish_24"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_toEndOf="@+id/performerText"
+                android:layout_marginTop="11dp" />
+
+            <TextView
+                android:id="@+id/performerTextList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/performerText"
+                android:paddingBottom="16dp"
+                android:paddingEnd="16dp"
+                android:paddingLeft="16dp"
+                android:text="Ad esempio band, dj, stage performer"
+                android:textColor="@color/light_grey"
+                android:textSize="12dp" />
+
+
+            <View
+                android:layout_marginTop="16dp"
+                android:id="@+id/type_separator_four"
+                android:layout_below="@id/performerTextList"
+                android:background="@drawable/main_gradient"
+                android:layout_width="match_parent"
+                android:layout_height="2dp"/>
+
+
+        </RelativeLayout>
+
+    </RelativeLayout>
+</FrameLayout>

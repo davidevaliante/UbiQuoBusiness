@@ -15,7 +15,7 @@ android {
         applicationId "com.firebase.notification.test.ubiquobusiness"
         minSdkVersion 17
         targetSdkVersion 25
-        versionCode 1
+        versionCode 6
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
@@ -23,8 +23,9 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
         }
         debug {
             signingConfig signingConfigs.config
@@ -41,12 +42,13 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:customtabs:25.3.1'
-    compile 'com.android.support:palette-v7:25.3.1'
-    compile 'com.github.deano2390:MaterialShowcaseView:1.1.0'
     compile 'com.android.support:appcompat-v7:25.3.1'
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.google.android.gms:play-services:11.0.0'
+    compile 'com.android.support:customtabs:25.3.1'
+    compile 'com.android.support:palette-v7:25.3.1'
+    compile 'com.github.deano2390:MaterialShowcaseView:1.1.0'
     compile 'com.flaviofaria:kenburnsview:1.0.7'
     compile 'com.github.bumptech.glide:okhttp-integration:1.5.0@aar'
     compile 'com.geniusforapp.fancydialog:FancyDialog:0.1.0'

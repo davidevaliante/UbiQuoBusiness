@@ -29,6 +29,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.wdullaer.materialdatetimepicker.date.DatePickerDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,15 +40,18 @@ import butterknife.ButterKnife;
 import es.dmoral.toasty.Toasty;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
-public class Registration extends FragmentActivity implements GoogleApiClient.OnConnectionFailedListener{
+public class Registration extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, DatePickerDialog.OnDateSetListener {
 
     protected FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
-    private PagerAdapter pagerAdapter;
+    private Registration.ScreenSlidePagerAdapter pagerAdapter;
     private GoogleApiClient  mGoogleApiClient;
     protected static Business newBusiness = new Business();
     protected static Double cityLatitude, cityLongitude;
     protected static String croppedImagePath;
+    protected static String employeeImage,employeeCity,employeeBirthday;
+    protected static String accountType;
+    protected List<Fragment> targetFragments;
 
     @BindView(R.id.registrationViewPager) CustomViewPager registrationViewPager;
 
@@ -57,7 +61,34 @@ public class Registration extends FragmentActivity implements GoogleApiClient.On
         setContentView(R.layout.activity_registration);
         ButterKnife.bind(this);
 
+        SharedPreferences sharedPreferences = getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
+        sharedPreferences.edit().clear().apply();
+
         UbiQuoBusinessUtils.removeStatusBar(this);
+
+
+        Integer type = getIntent().getIntExtra("ACCOUNT_TYPE",9);
+        if(type==9){
+            finish();
+        }
+
+        //locali
+        if(type==0){
+            targetFragments = initializeFragmentsForBusiness();
+            pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(),targetFragments);
+            registrationViewPager.setOffscreenPageLimit(0);
+            registrationViewPager.setPagingEnabled(false);
+            registrationViewPager.setAdapter(pagerAdapter);
+        }
+
+        //employee
+        if(type==1){
+            targetFragments = initializeFragmentsForEmployee();
+            pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(),targetFragments);
+            registrationViewPager.setOffscreenPageLimit(0);
+            registrationViewPager.setPagingEnabled(false);
+            registrationViewPager.setAdapter(pagerAdapter);
+        }
 
         mGoogleApiClient = new GoogleApiClient
                                                 .Builder(this)
@@ -66,15 +97,12 @@ public class Registration extends FragmentActivity implements GoogleApiClient.On
                                                 .enableAutoManage(this, this)
                                                 .build();
 
-        List<Fragment> registrationFragements = initializeFragments();
-        pagerAdapter = new ScreenSlidePagerAdapter(getSupportFragmentManager(),registrationFragements);
-        registrationViewPager.setPagingEnabled(false);
-        registrationViewPager.setAdapter(pagerAdapter);
+
 
 
 
         mAuth = FirebaseAuth.getInstance();
-        authStateListener = new FirebaseAuth.AuthStateListener() {
+        /*authStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 if(firebaseAuth.getCurrentUser() != null) {
@@ -84,7 +112,7 @@ public class Registration extends FragmentActivity implements GoogleApiClient.On
                 }
             }
         };
-        mAuth.addAuthStateListener(authStateListener);
+        mAuth.addAuthStateListener(authStateListener);*/
 
 
 
@@ -94,6 +122,14 @@ public class Registration extends FragmentActivity implements GoogleApiClient.On
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         Toasty.error(Registration.this,"Google Maps connection error", Toast.LENGTH_SHORT, true).show();
+    }
+
+    @Override
+    public void onDateSet(DatePickerDialog view, int year, int monthOfYear, int dayOfMonth) {
+        EmployeeFirstPageRegistration firstPage = (EmployeeFirstPageRegistration) pagerAdapter.getItem(0);
+        Integer fixedMonth = monthOfYear+1;
+        firstPage.employeeBirthday.setText(dayOfMonth+"/"+fixedMonth+"/"+year);
+        employeeBirthday = dayOfMonth+"/"+fixedMonth+"/"+year;
     }
 
     private class ScreenSlidePagerAdapter extends FragmentStatePagerAdapter {
@@ -132,7 +168,7 @@ public class Registration extends FragmentActivity implements GoogleApiClient.On
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mAuth.removeAuthStateListener(authStateListener);
+        //mAuth.removeAuthStateListener(authStateListener);
     }
 
     @Override
@@ -147,11 +183,23 @@ public class Registration extends FragmentActivity implements GoogleApiClient.On
 
     }
 
-    private List<Fragment> initializeFragments(){
+    //lista di fragments per registrazione locali
+    private List<Fragment> initializeFragmentsForBusiness(){
         List<Fragment> fList = new ArrayList<Fragment>();
         fList.add(NamePlaceFragment.newInstance());
         fList.add(OpeningClosing.newInstance());
         fList.add(ArgumentsImageFragment.newInstance());
+
+
+        return fList;
+    }
+
+    //lista di fragments per registrazione locali
+    private List<Fragment> initializeFragmentsForEmployee(){
+        List<Fragment> fList = new ArrayList<Fragment>();
+        fList.add(EmployeeFirstPageRegistration.newInstance());
+
+
 
         return fList;
     }

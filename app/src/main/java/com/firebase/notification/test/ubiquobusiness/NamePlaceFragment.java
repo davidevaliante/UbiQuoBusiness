@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -32,6 +33,11 @@ import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.location.places.ui.SupportPlaceAutocompleteFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -90,7 +96,6 @@ public class NamePlaceFragment extends Fragment {
         ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_name_place, container, false);
 
         ButterKnife.bind(this, rootView);
-
 
         mGeocoder = new Geocoder(getActivity(), Locale.getDefault());
         AutocompleteFilter filter_only_italy_cities =
@@ -162,6 +167,7 @@ public class NamePlaceFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (canGoNext()) {
+
                     ((Registration) getActivity()).registrationViewPager.setCurrentItem(1, true);
                     Log.d("Nome : ", ((Registration)getActivity()).newBusiness.getName());
                     Log.d("Città : ", ((Registration)getActivity()).newBusiness.getCity());
@@ -235,6 +241,7 @@ public class NamePlaceFragment extends Fragment {
         Double longitude = place.getLatLng().longitude;
         String phone = place.getPhoneNumber().toString();
 
+
         try {
             String placeCity = getCityNameByCoordinates(latitude, longitude);
             if (!placeCity.isEmpty()) {
@@ -284,6 +291,7 @@ public class NamePlaceFragment extends Fragment {
             ((Registration)getActivity()).cityLatitude = latitude;
             ((Registration)getActivity()).cityLongitude = longitude;
 
+
             pickedCity = cityName;
         } catch (IOException e) {
             e.printStackTrace();
@@ -322,28 +330,9 @@ public class NamePlaceFragment extends Fragment {
         ((Registration)getActivity()).newBusiness.setAdress(targetAdress);
         ((Registration)getActivity()).newBusiness.setLatitude(latitude);
         ((Registration)getActivity()).newBusiness.setLongitude(longitude);
+
     }
 
-    private void loadRegisterData(){
-
-        //carica informazioni già presenti
-        SharedPreferences sharedPreferences = getActivity().getSharedPreferences("UBIQUO_BUSINESS",Context.MODE_PRIVATE);
-        String lastName = sharedPreferences.getString("PLACE_NAME","NA");
-        String lastAdress = sharedPreferences.getString("PLACE_ADRESS","NA");
-        String lastCity = sharedPreferences.getString("PLACE_CITY","NA");
-
-        if(!lastName.isEmpty() && !lastName.equalsIgnoreCase("NA")){
-            name.setText(lastName);
-        }
-
-        if(!lastAdress.isEmpty() && !lastName.equalsIgnoreCase("NA")){
-            autocompleteFragmentAdress.setText(lastAdress);
-        }
-
-        if(!lastCity.isEmpty() && !lastName.equalsIgnoreCase("NA")){
-            autocompleteFragmentCity.setText(lastCity);
-        }
-    }
 
     @Override
     public void onDestroyView() {

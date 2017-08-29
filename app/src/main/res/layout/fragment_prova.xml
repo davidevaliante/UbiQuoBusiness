@@ -1,0 +1,26 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_gravity="center"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="250dp"
+    android:layout_height="150dp"
+    android:background="@color/pureBlack"
+    android:orientation="vertical"
+    tools:context="com.firebase.notification.test.ubiquobusiness.Prova">
+
+    <!-- TODO: Update blank fragment layout -->
+    <TextView
+        android:id="@+id/_prova"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="ciao"
+        android:textColor="@color/blackish"
+        android:textSize="28sp" />
+
+    <Button
+        android:id="@+id/btn_base"
+        android:layout_width="match_parent"
+        android:layout_height="50sp"
+        android:layout_below="@+id/_prova"
+        android:text="Prova" />
+
+</LinearLayout>

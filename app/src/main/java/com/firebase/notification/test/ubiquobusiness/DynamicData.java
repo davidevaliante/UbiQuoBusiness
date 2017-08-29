@@ -3,11 +3,11 @@ package com.firebase.notification.test.ubiquobusiness;
 public class DynamicData {
 
     //Tutti inizializzati a Zero
-    private Integer like=0, maLike=0, fLike=0, eLike=0, sLike=0, nLike=0, age=0;
-    private Float price= 0.0f;
-    private Long date=0L;
-    private String eName, iPath, pName;
-    private Boolean isFree=true;
+    public Integer like=0, maLike=0, fLike=0, eLike=0, sLike=0, nLike=0, age=0;
+    public Float price= 0.0f;
+    public Long date=0L;
+    public String eName, iPath, pName;
+    public Boolean isFree=true;
 
 
     public DynamicData() {
